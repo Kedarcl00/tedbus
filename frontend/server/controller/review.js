@@ -3,7 +3,7 @@
  */
 
 const Review = require('../models/Review');
-const Booking = require('../../src/models/Booking');
+const Booking = require('../../../src/models/Booking');
 
 /**
  * POST /api/reviews — Submit a new review
