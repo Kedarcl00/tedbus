@@ -93,8 +93,8 @@ export class AuthService {
     // Clear Google ID
     sessionStorage.removeItem(GOOGLE_ID_KEY);
 
-    // Clear any other auth-related data
-    sessionStorage.clear();
+    // Note: DO NOT call sessionStorage.clear() as it would wipe
+    // non-auth data like theme preferences, language settings, etc.
 
     // Update observable to notify subscribers
     this.currentUserSubject.next(null);
