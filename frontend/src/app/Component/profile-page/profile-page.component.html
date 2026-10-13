@@ -5,7 +5,7 @@
           <mat-icon style="color: grey; font-size: 30px; height: 100% ;width:100%;">perm_identity</mat-icon>
   
           <div class="leftPannel_eachListItem_text">
-            {{ 'Dashboard' }}
+            {{ 'PROFILE.DASHBOARD' | translate }}
           </div>
   
         </li>
@@ -14,19 +14,19 @@
         <li class="leftPannel_eachListOption" (click)="handlelistitemclick('trips')">
           <i class="material-icons" style="color: grey; font-size: 30px;">location_on</i>
   
-          <div class="leftPannel_eachListItem_text">My Trips</div>
+          <div class="leftPannel_eachListItem_text">{{ 'PROFILE.MY_TRIPS' | translate }}</div>
         </li>
         <div class="line"></div>
         <!-- Add other list items here -->
         <li class="leftPannel_eachListOption" (click)="handlelistitemclick('profile')">
           <i class="material-icons" style="color: grey; font-size: 30px;">settings</i>
-          <div class="leftPannel_eachListItem_text">My Profile</div>
+          <div class="leftPannel_eachListItem_text">{{ 'PROFILE.MY_PROFILE' | translate }}</div>
         </li>
         <div class="line"></div>
         <li class="leftPannel_eachListOption" (click)="handlelistitemclick('wallet')">
           <i class="material-icons" style="color: grey; font-size: 30px;">account_balance_wallet</i>
   
-          <div class="leftPannel_eachListItem_text">Wallet</div>
+          <div class="leftPannel_eachListItem_text">{{ 'PROFILE.WALLET' | translate }}</div>
         </li>
         <div class="line"></div>
       </ul>
@@ -38,14 +38,14 @@
       <app-my-trip></app-my-trip> 
     </div>
     <div *ngIf="selecteditem === 'wallet'">
-      Wallet feature coming soon...
+      {{ 'PROFILE.WALLET_COMING_SOON' | translate }}
     </div>
     <div *ngIf="selecteditem === 'profile'" class="rightPannel">
-      <span class="profileHeading">{{ 'My Profile' }}</span>
+      <span class="profileHeading">{{ 'PROFILE.MY_PROFILE' | translate }}</span>
       
       <!-- Loading State -->
       <div *ngIf="isLoading" class="loading-container" style="padding: 20px; text-align: center;">
-        <p>Loading profile...</p>
+        <p>{{ 'PROFILE.LOADING' | translate }}</p>
       </div>
 
       <!-- Error State -->
@@ -58,37 +58,37 @@
         <div style="display: flex; justify-content: space-between">
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
-            <div class="userDetailHeading">Your name</div>
+            <div class="userDetailHeading">{{ 'PROFILE.YOUR_NAME' | translate }}</div>
             <div class="userDetailInfo">{{ userProfile.name || 'N/A' }}</div>
           </div>
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
-            <div class="userDetailHeading">Date of Birth</div>
-            <div class="userDetailInfo">{{ userProfile.dateOfBirth ? (userProfile.dateOfBirth | date: 'yyyy-MM-dd') : 'Not set' }}</div>
+            <div class="userDetailHeading">{{ 'PROFILE.DATE_OF_BIRTH' | translate }}</div>
+            <div class="userDetailInfo">{{ userProfile.dateOfBirth ? (userProfile.dateOfBirth | date: 'yyyy-MM-dd') : ('PROFILE.NOT_SET' | translate) }}</div>
           </div>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 5%">
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
-            <div class="userDetailHeading">Gender</div>
+            <div class="userDetailHeading">{{ 'PROFILE.GENDER' | translate }}</div>
             <div class="userDetailInfo">{{ userProfile.gender || '-' }}</div>
           </div>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 5%">
           <div class="contactLine"></div>
-          <div class="contactDetailsHeading">Contact Details</div>
+          <div class="contactDetailsHeading">{{ 'PROFILE.CONTACT_DETAILS' | translate }}</div>
           <div class="contactLine"></div>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 5%">
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
-            <div class="userDetailHeading">email</div>
+            <div class="userDetailHeading">{{ 'PROFILE.EMAIL' | translate }}</div>
             <div class="userDetailInfo">{{ userProfile.email || 'N/A' }}</div>
           </div>
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
-            <div class="userDetailHeading">phone</div>
-            <div class="userDetailInfo">{{ userProfile.phone || 'Not set' }}</div>
+            <div class="userDetailHeading">{{ 'PROFILE.PHONE' | translate }}</div>
+            <div class="userDetailInfo">{{ userProfile.phone || ('PROFILE.NOT_SET' | translate) }}</div>
           </div>
         </div>
       </div>

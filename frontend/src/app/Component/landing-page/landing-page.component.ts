@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { TranslateModule } from '@ngx-translate/core';
 import { DialogComponent } from './dialog/dialog.component';
 
 @Component({
@@ -22,6 +23,7 @@ import { DialogComponent } from './dialog/dialog.component';
     MatFormFieldModule,
     MatInputModule,
     MatMenuModule,
+    TranslateModule,
     DialogComponent,
   ],
   templateUrl: './landing-page.component.html',

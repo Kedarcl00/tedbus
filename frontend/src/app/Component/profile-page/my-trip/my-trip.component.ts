@@ -37,6 +37,10 @@ import { BookingService, BookingResponse } from '../../../service/booking.servic
 export class MyTripComponent implements OnInit {
   // Bookings loaded from API
   bookings: BookingResponse[] = [];
+  
+  // Classified bookings
+  currentBookings: BookingResponse[] = [];
+  completedBookings: BookingResponse[] = [];
 
   // UI states
   isLoading: boolean = true;
@@ -94,6 +98,10 @@ export class MyTripComponent implements OnInit {
     this.bookingService.getMyBookings().subscribe({
       next: (bookings: BookingResponse[]) => {
         this.bookings = bookings;
+        
+        // Classify bookings into current/upcoming and completed
+        this.classifyBookings(bookings);
+        
         // Pre-assign images to each booking to avoid change detection issues
         this.bookings.forEach((booking) => {
           if (!this.bookingImages.has(booking._id || booking.id || '')) {
@@ -109,6 +117,65 @@ export class MyTripComponent implements OnInit {
         this.isLoading = false;
         console.error('Error loading bookings:', error);
       }
+    });
+  }
+
+  /**
+   * Classify bookings into current/upcoming and completed
+   * 
+   * Current/Upcoming: Not completed, not cancelled, and journey date is today or future
+   * Completed: Completed status, cancelled status, or journey date in the past
+   * 
+   * Note: This classification uses the browser's local timezone. If the server stores
+   * dates in a different timezone, there may be a one-day discrepancy for bookings
+   * near midnight. For production, consider server-side classification or UTC timestamps.
+   * 
+   * @param bookings - All bookings to classify
+   * 
+   * Requirements: 3.1 - Separate current/upcoming from completed bookings
+   */
+  private classifyBookings(bookings: BookingResponse[]): void {
+    // Get today's date at midnight in local timezone
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    this.currentBookings = bookings.filter(b => {
+      // Parse journey date - assumes date string is in ISO format or compatible
+      const dateStr = b.journeyDate || b.departureDate || '';
+      if (!dateStr) {
+        // No date available - default to completed
+        return false;
+      }
+      
+      const journeyDate = new Date(dateStr);
+      journeyDate.setHours(0, 0, 0, 0);
+      
+      // Current/upcoming: not completed/cancelled and date is today or future
+      return (
+        b.status !== 'completed' && 
+        b.status !== 'cancelled' && 
+        !isNaN(journeyDate.getTime()) &&
+        journeyDate >= today
+      );
+    });
+    
+    this.completedBookings = bookings.filter(b => {
+      // Parse journey date
+      const dateStr = b.journeyDate || b.departureDate || '';
+      if (!dateStr) {
+        // No date available - default to completed if status is terminal
+        return b.status === 'completed' || b.status === 'cancelled';
+      }
+      
+      const journeyDate = new Date(dateStr);
+      journeyDate.setHours(0, 0, 0, 0);
+      
+      // Completed: completed status, cancelled status, or past date
+      return (
+        b.status === 'completed' || 
+        b.status === 'cancelled' ||
+        (isNaN(journeyDate.getTime()) || journeyDate < today)
+      );
     });
   }
 

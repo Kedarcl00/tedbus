@@ -9,6 +9,17 @@
     </button>
   </div>
 
+  <!-- Filter and Search -->
+  <div class="filter-search-bar" *ngIf="posts.length > 0">
+    <select class="form-select" [(ngModel)]="filterTag" (ngModelChange)="onFilterChange()">
+      <option value="">{{ 'COMMUNITY.FILTER_BY_TAG' | translate }}</option>
+      <option *ngFor="let tag of availableTags" [value]="tag">#{{ tag }}</option>
+    </select>
+    <input class="form-input" type="search" [(ngModel)]="searchQuery" 
+           (ngModelChange)="onSearchChange()"
+           [placeholder]="'COMMUNITY.SEARCH_POSTS' | translate" />
+  </div>
+
   <!-- Error banner -->
   <div class="error-banner" *ngIf="error">{{ error }}</div>
 
@@ -20,6 +31,8 @@
               [placeholder]="'COMMUNITY.WRITE_POST' | translate"></textarea>
     <input class="form-input" [(ngModel)]="newTags"
            placeholder="Tags (comma-separated): route, destination, tip" />
+    <input class="form-input" [(ngModel)]="newImageUrl"
+           [placeholder]="'COMMUNITY.POST_IMAGE' | translate" />
     <select class="form-select" [(ngModel)]="selectedTopicId">
       <option value="">— No topic —</option>
       <option *ngFor="let t of topics" [value]="t._id">{{ t.title }}</option>
@@ -38,12 +51,12 @@
   <div class="loading" *ngIf="isLoading">Loading posts…</div>
 
   <!-- Empty -->
-  <div class="empty" *ngIf="!isLoading && posts.length === 0 && !error">
-    No posts yet. Be the first to share your travel story!
+  <div class="empty" *ngIf="!isLoading && filteredPosts.length === 0 && !error">
+    {{ posts.length === 0 ? 'No posts yet. Be the first to share your travel story!' : 'No posts match your filters.' }}
   </div>
 
   <!-- Posts -->
-  <ng-container *ngFor="let post of posts">
+  <ng-container *ngFor="let post of filteredPosts">
     <div class="post-wrapper">
       <div class="post-topic-badge" *ngIf="post.forumTopicId">
         {{ topicName(post.forumTopicId) }}
@@ -53,7 +66,10 @@
         (like)="onLike($event)"
         (comment)="onComment($event)"
         (share)="onShare($event)"
-        (report)="onReport($event)">
+        (report)="onReport($event)"
+        (edit)="onEdit($event)"
+        (delete)="onDelete($event)"
+        (postUpdated)="onPostUpdated($event)">
       </app-post-card>
 
       <!-- Inline comment form -->

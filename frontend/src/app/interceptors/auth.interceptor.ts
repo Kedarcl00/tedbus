@@ -4,8 +4,11 @@ import {
   HttpRequest,
   HttpHandlerFn,
   HttpEvent,
+  HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { AuthService } from '../service/auth.service';
 
 /**
@@ -34,6 +37,7 @@ export const authInterceptor: HttpInterceptorFn = (
 ): Observable<HttpEvent<any>> => {
   // Inject AuthService dependency
   const authService = inject(AuthService);
+  const router = inject(Router);
 
   // Get Google ID from AuthService if user is authenticated
   const googleId = authService.getGoogleIdForHeaderInjection();
@@ -47,6 +51,22 @@ export const authInterceptor: HttpInterceptorFn = (
     });
   }
 
-  // Pass request to next handler in the chain
-  return next(req);
+  // Pass request to next handler and catch 401 errors
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Handle 401 Unauthorized errors - session expired or invalid
+      if (error.status === 401) {
+        console.warn('401 Unauthorized - clearing session and redirecting to login');
+        
+        // Clear stale authentication data
+        authService.logout();
+        
+        // Redirect to home/login page
+        router.navigate(['/'], { replaceUrl: true });
+      }
+      
+      // Re-throw error for component-level handling
+      return throwError(() => error);
+    })
+  );
 };

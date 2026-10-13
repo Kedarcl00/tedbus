@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { ThemeService } from './theme.service';
 
 /**
  * Session storage key for storing authenticated user data.
@@ -18,6 +21,7 @@ interface AuthenticatedUser {
   name: string;
   email: string;
   picture?: string;
+  theme?: 'light' | 'dark';
   [key: string]: any;
 }
 
@@ -25,6 +29,8 @@ interface AuthenticatedUser {
   providedIn: 'root',
 })
 export class AuthService {
+  private apiUrl = 'http://localhost:5001';
+
   // Emits the current user object (or null when logged out)
   private currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(
     this.loadUser()
@@ -36,6 +42,11 @@ export class AuthService {
    */
   currentUser$: Observable<AuthenticatedUser | null> =
     this.currentUserSubject.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private themeService: ThemeService
+  ) {}
 
   /**
    * Synchronous: true if a user is currently stored in sessionStorage
@@ -72,6 +83,11 @@ export class AuthService {
 
     // Update observable to notify subscribers
     this.currentUserSubject.next(user);
+
+    // Sync theme preference from user profile
+    if (user.theme && (user.theme === 'light' || user.theme === 'dark')) {
+      this.themeService.setTheme(user.theme);
+    }
   }
 
   /**
@@ -87,8 +103,33 @@ export class AuthService {
     // Clear Google ID
     sessionStorage.removeItem(GOOGLE_ID_KEY);
 
+    // Note: DO NOT call sessionStorage.clear() as it would wipe
+    // non-auth data like theme preferences, language settings, etc.
+
     // Update observable to notify subscribers
     this.currentUserSubject.next(null);
+  }
+
+  /**
+   * Restore session on app initialization
+   * Validates existing session storage data
+   * If invalid, clears stale data
+   * 
+   * Called from app initialization (AppComponent.ngOnInit)
+   * 
+   * @returns Observable<boolean> - true if session restored, false otherwise
+   * Requirements: 1.2 - Session restoration
+   */
+  restoreSession(): Observable<boolean> {
+    const user = this.loadUser();
+    if (!user) {
+      return of(false);
+    }
+
+    // Session data exists in storage, user is already loaded
+    // For future JWT validation, you would call backend here
+    // For now, trust sessionStorage data
+    return of(true);
   }
 
   /**

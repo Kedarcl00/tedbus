@@ -27,11 +27,12 @@ exports.getPosts = async (req, res) => {
 // POST /api/v1/community/posts  (protected by verifiedGuard)
 exports.createPost = async (req, res) => {
   try {
-    const { userId, authorName, title, body, tags, forumTopicId } = req.body;
+    const { userId, authorName, title, body, tags, forumTopicId, imageUrl } = req.body;
     if (!title?.trim() || !body?.trim()) return res.sendError('VALIDATION', 400);
     const post = await Post.create({
       authorId: userId, authorName, title, body,
       tags: tags || [], forumTopicId: forumTopicId || null,
+      imageUrl: imageUrl || null,
     });
     if (forumTopicId) {
       await ForumTopic.findByIdAndUpdate(forumTopicId, { $inc: { postCount: 1 } });
@@ -85,6 +86,59 @@ exports.sharePost = async (req, res) => {
     );
     if (!post) return res.sendError('NOT_FOUND', 404);
     res.json({ shareCount: post.shareCount });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// PUT /api/v1/community/posts/:id  (author only, protected by verifiedGuard)
+exports.updatePost = async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) return res.sendError('UNAUTHORIZED', 401);
+    
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.sendError('NOT_FOUND', 404);
+    
+    // Authorization: only the author can edit
+    if (post.authorId !== userId) return res.sendError('FORBIDDEN', 403);
+    
+    const { title, body, tags, imageUrl } = req.body;
+    if (title !== undefined) post.title = title.trim();
+    if (body !== undefined) post.body = body.trim();
+    if (tags !== undefined) post.tags = tags;
+    if (imageUrl !== undefined) post.imageUrl = imageUrl;
+    
+    // TODO: Future enhancement - restrict editing to 24 hours after creation
+    // const hoursSinceCreation = (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60);
+    // if (hoursSinceCreation > 24) return res.sendError('EDIT_WINDOW_EXPIRED', 403);
+    
+    await post.save();
+    res.json(post);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// DELETE /api/v1/community/posts/:id  (author only, soft delete)
+exports.deletePost = async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) return res.sendError('UNAUTHORIZED', 401);
+    
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.sendError('NOT_FOUND', 404);
+    
+    // Authorization: only the author can delete
+    if (post.authorId !== userId) return res.sendError('FORBIDDEN', 403);
+    
+    // Soft delete by setting hidden to true
+    post.hidden = true;
+    await post.save();
+    
+    res.json({ success: true, message: 'Post deleted' });
   } catch (err) {
     console.error(err);
     res.sendError('SERVER_ERROR', 500);

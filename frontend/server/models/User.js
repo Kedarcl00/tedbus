@@ -26,6 +26,20 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
+    notificationPreferences: {
+      type: Object,
+      default: { email: true, push: false, inApp: true },
+    },
+    preferredLanguage: {
+      type: String,
+      default: 'en',
+      enum: ['en', 'hi', 'mr'],
+    },
+    theme: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'light',
+    },
     createdAt: {
       type: Date,
       default: Date.now,

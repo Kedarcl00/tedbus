@@ -1,0 +1,77 @@
+<div class="review-item">
+  <!-- Header: Rating and Date -->
+  <div class="review-header">
+    <div class="rating-stars">
+      <mat-icon
+        *ngFor="let star of getRatingStars()"
+        [class.filled]="star <= review.rating"
+      >
+        {{ star <= review.rating ? 'star' : 'star_border' }}
+      </mat-icon>
+    </div>
+    <div class="review-date">
+      {{ review.createdAt | date:'MMM d, yyyy' }}
+      <span class="edited-badge" *ngIf="review.editedAt">(edited)</span>
+    </div>
+  </div>
+
+  <!-- Review Text -->
+  <div class="review-text">
+    {{ review.reviewText }}
+  </div>
+
+  <!-- Actions -->
+  <div class="review-actions">
+    <!-- Helpful Button -->
+    <button
+      class="action-button"
+      [class.active]="hasMarkedHelpful"
+      (click)="onHelpfulClick()"
+      [disabled]="!currentUserId || hasMarkedHelpful"
+    >
+      <mat-icon>thumb_up</mat-icon>
+      <span>Helpful ({{ review.helpful.length }})</span>
+    </button>
+
+    <!-- Report Button -->
+    <button
+      class="action-button"
+      [class.reported]="hasReported"
+      (click)="onReportClick()"
+      [disabled]="!currentUserId || hasReported"
+    >
+      <mat-icon>flag</mat-icon>
+      <span>{{ hasReported ? 'Reported' : 'Report' }}</span>
+    </button>
+
+    <!-- Edit Button (owner only, within 24h) -->
+    <button
+      class="action-button edit-button"
+      *ngIf="canEdit"
+      (click)="onEditClick()"
+    >
+      <mat-icon>edit</mat-icon>
+      <span>Edit</span>
+    </button>
+
+    <!-- Delete Button (owner within 24h or moderator) -->
+    <button
+      class="action-button delete-button"
+      *ngIf="canDelete"
+      (click)="onDeleteClick()"
+    >
+      <mat-icon>delete</mat-icon>
+      <span>Delete</span>
+    </button>
+
+    <!-- Moderate Button (moderator only) -->
+    <button
+      class="action-button moderate-button"
+      *ngIf="isModerator"
+      (click)="onModerateClick()"
+    >
+      <mat-icon>{{ review.hidden ? 'visibility' : 'visibility_off' }}</mat-icon>
+      <span>{{ review.hidden ? 'Unhide' : 'Hide' }}</span>
+    </button>
+  </div>
+</div>

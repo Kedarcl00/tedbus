@@ -51,15 +51,46 @@ exports.markAllRead = async (req, res) => {
   }
 };
 
-// GET /api/v1/notifications/preferences?userId=xxx  — stub for channel prefs
+// GET /api/v1/notifications/preferences?userId=xxx  — get user notification preferences
 exports.getPreferences = async (req, res) => {
-  // In a full implementation these would be stored on the Customer doc.
-  // For now return sensible defaults.
-  res.json({ email: true, push: false, inApp: true });
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.sendError('UNAUTHORIZED', 401);
+    
+    const User = require('../models/User');
+    const user = await User.findById(userId).select('notificationPreferences').lean().exec();
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const prefs = user.notificationPreferences || { email: true, push: false, inApp: true };
+    res.json(prefs);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
 };
 
-// PUT /api/v1/notifications/preferences
+// PUT /api/v1/notifications/preferences — update user notification preferences
 exports.savePreferences = async (req, res) => {
-  // Preferences would be saved on Customer; stub response for now.
-  res.json({ success: true, preferences: req.body });
+  try {
+    const { userId, email, push, inApp } = req.body;
+    if (!userId) return res.sendError('UNAUTHORIZED', 401);
+    
+    const User = require('../models/User');
+    const preferences = {};
+    if (typeof email === 'boolean') preferences.email = email;
+    if (typeof push === 'boolean') preferences.push = push;
+    if (typeof inApp === 'boolean') preferences.inApp = inApp;
+    
+    await User.findByIdAndUpdate(userId, {
+      notificationPreferences: preferences
+    });
+    
+    res.json({ success: true, preferences });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
 };

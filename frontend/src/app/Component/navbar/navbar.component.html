@@ -11,8 +11,22 @@
     <div class="h-6 w-[1px] bg-gray-200"></div>
     <div class="flex gap-3">
       <!-- Bus Tickets -->
-      <a class="flex flex-col items-center text-center gap-1 px-2 py-3 rounded-lg group hover:bg-gray-100 bg-main-color sm:bg-transparent"
-        style="color: var(--color-text)">
+      <a [routerLink]="['/my-trips']" 
+         *ngIf="isloggedIn"
+         routerLinkActive="active"
+         class="flex flex-col items-center text-center gap-1 px-2 py-3 rounded-lg group hover:bg-gray-100 bg-main-color sm:bg-transparent"
+         style="color: var(--color-text); cursor: pointer;"
+         aria-label="My Trips"
+         title="My Trips">
+        <svg class="group-hover:fill-main-color fill-white sm:fill-black" width="29" height="20" viewBox="0 0 29 20">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M27.4574 2.53544C26.7324 1.13025 25.8004 0.327283 24.7992 0.217787C15.4095 -0.712926 3.43064 1.49524 0.979642 3.88589C-0.090514 4.9261 -0.28038 7.3715 0.392782 11.3681C0.858818 14.1602 1.58376 16.6604 1.60102 16.7699L1.75637 17.3174L4.74245 16.9706C4.9841 18.6861 6.3822 20 8.07374 20C9.92062 20 11.4396 18.4123 11.4396 16.4414C11.4396 16.3501 11.4396 16.2771 11.4223 16.1859L18.4991 15.3282C18.4991 15.3464 18.4991 15.3829 18.4991 15.4012C18.4991 17.3539 20.0008 18.9598 21.8649 18.9598C23.7118 18.9598 25.2308 17.3721 25.2308 15.4012C25.2308 15.1092 25.1962 14.8172 25.1272 14.5435L28.1478 14.1785L28.3031 13.8317C29.5114 11.2039 29.0971 5.71082 27.4574 2.53544Z"/>
+        </svg>
+        <p style="color: var(--color-text)">{{ 'NAV.BUS_TICKETS' | translate }}</p>
+      </a>
+      <!-- Bus Tickets (not logged in - no link) -->
+      <a *ngIf="!isloggedIn"
+         class="flex flex-col items-center text-center gap-1 px-2 py-3 rounded-lg group hover:bg-gray-100 bg-main-color sm:bg-transparent"
+         style="color: var(--color-text)">
         <svg class="group-hover:fill-main-color fill-white sm:fill-black" width="29" height="20" viewBox="0 0 29 20">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M27.4574 2.53544C26.7324 1.13025 25.8004 0.327283 24.7992 0.217787C15.4095 -0.712926 3.43064 1.49524 0.979642 3.88589C-0.090514 4.9261 -0.28038 7.3715 0.392782 11.3681C0.858818 14.1602 1.58376 16.6604 1.60102 16.7699L1.75637 17.3174L4.74245 16.9706C4.9841 18.6861 6.3822 20 8.07374 20C9.92062 20 11.4396 18.4123 11.4396 16.4414C11.4396 16.3501 11.4396 16.2771 11.4223 16.1859L18.4991 15.3282C18.4991 15.3464 18.4991 15.3829 18.4991 15.4012C18.4991 17.3539 20.0008 18.9598 21.8649 18.9598C23.7118 18.9598 25.2308 17.3721 25.2308 15.4012C25.2308 15.1092 25.1962 14.8172 25.1272 14.5435L28.1478 14.1785L28.3031 13.8317C29.5114 11.2039 29.0971 5.71082 27.4574 2.53544Z"/>
         </svg>
@@ -23,6 +37,18 @@
 
   <!-- Right: controls -->
   <div class="hidden md:flex items-center gap-2">
+
+    <!-- Notification bell (logged in only) -->
+    <button *ngIf="isloggedIn" 
+            class="theme-toggle-btn notification-bell" 
+            (click)="toggleNotificationDrawer()" 
+            [title]="'NOTIFICATIONS.TITLE' | translate"
+            [matBadge]="unreadCount"
+            [matBadgeHidden]="unreadCount === 0"
+            matBadgeSize="small"
+            matBadgeColor="warn">
+      <mat-icon style="color: var(--color-text)">notifications</mat-icon>
+    </button>
 
     <!-- Language selector -->
     <button class="theme-toggle-btn" [matMenuTriggerFor]="langMenu" title="Language">
@@ -59,7 +85,7 @@
         <i class="fa-solid fa-angle-down text-xl"></i>
       </button>
       <mat-menu #accountMenu="matMenu">
-        <button mat-menu-item>{{ 'NAV.MY_TRIPS' | translate }}</button>
+        <button mat-menu-item (click)="navigate('/my-trips')">{{ 'NAV.MY_TRIPS' | translate }}</button>
         <button mat-menu-item>{{ 'NAV.WALLET_CARDS' | translate }}</button>
         <button mat-menu-item (click)="navigate('/profile')">{{ 'NAV.MY_PROFILE' | translate }}</button>
         <button mat-menu-item>{{ 'NAV.WALLET' | translate }}</button>
@@ -67,4 +93,10 @@
       </mat-menu>
     </ng-container>
   </div>
+
+  <!-- Notification Drawer -->
+  <app-notification-drawer 
+    [isOpen]="showNotificationDrawer" 
+    (close)="showNotificationDrawer = false">
+  </app-notification-drawer>
 </nav>

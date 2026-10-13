@@ -19,7 +19,7 @@ const corsOptions = {
   credentials: true,           // Allow cookies and auth headers
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id']  // Added X-User-Id
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Role']  // Added X-User-Id and X-User-Role
 };
 
 app.use(cors(corsOptions));
@@ -64,6 +64,17 @@ app.use('/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 const communityRoutes = require('./routes/community');
 app.use(communityRoutes);
+const notificationRoutes = require('./routes/notification');
+app.use(notificationRoutes);
+const reviewRoutes = require('./routes/review');
+app.use(reviewRoutes);
+
+// Route Planner routes
+const routePlannerController = require('./controller/route-planner');
+app.get('/api/route-planner/routes', routePlannerController.getSavedRoutes);
+app.post('/api/route-planner/routes', routePlannerController.saveRoute);
+app.delete('/api/route-planner/routes/:id', routePlannerController.deleteRoute);
+app.post('/api/route-planner/calculate', routePlannerController.calculateRoute);
 
 /**
  * Initialize database connection on application startup

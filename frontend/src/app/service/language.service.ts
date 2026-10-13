@@ -8,7 +8,7 @@ const STORAGE_KEY = 'tedbus_lang';
 export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
   { code: 'hi', label: 'हिन्दी',  flag: '🇮🇳' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'mr', label: 'मराठी', flag: '🇮🇳' },
 ];
 
 @Injectable({ providedIn: 'root' })

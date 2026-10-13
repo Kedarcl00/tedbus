@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataserviceService } from '../../service/dataservice.service';
 import { BusService } from '../../service/bus.service';
@@ -12,7 +13,7 @@ import { FareCalculationService } from '../../service/fare-calculation.service';
 @Component({
   selector: 'app-payment-page',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, TranslateModule],
   templateUrl: './payment-page.component.html',
   styleUrl: './payment-page.component.css',
 })

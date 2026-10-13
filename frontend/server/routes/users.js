@@ -28,4 +28,12 @@ router.put('/profile', usersController.updateProfile);
  */
 router.get('/preferences', usersController.getPreferences);
 
+/**
+ * PUT /api/users/profile/language
+ * Update current user's preferred language
+ * User ID from X-User-Id header
+ * Body: { language: 'en'|'hi'|'mr' }
+ */
+router.put('/profile/language', usersController.updateLanguage);
+
 module.exports = router;
