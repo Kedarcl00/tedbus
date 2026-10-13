@@ -1,5 +1,6 @@
 const Booking = require('../models/booking');
 const LoggerService = require('../services/logger.service');
+const { createNotification } = require('../services/notification-helper');
 const logger = new LoggerService();
 
 /**
@@ -263,6 +264,21 @@ exports.createBooking = async (req, res) => {
       .populate('customerId', 'name email')
       .lean()
       .exec();
+    
+    // Trigger booking confirmation notification
+    try {
+      await createNotification(
+        user._id,
+        'BOOKING_CONFIRMED',
+        'Booking Confirmed',
+        `Your booking ${bookingReference} has been confirmed successfully.`,
+        ['in-app', 'email'],
+        { bookingReference, bookingId: booking._id.toString() }
+      );
+    } catch (notifError) {
+      // Log but don't fail the booking if notification fails
+      logger.error('Failed to create booking confirmation notification', notifError);
+    }
     
     res.status(201).json({
       success: true,

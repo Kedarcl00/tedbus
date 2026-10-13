@@ -26,6 +26,10 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
+    notificationPreferences: {
+      type: Object,
+      default: { email: true, push: false, inApp: true },
+    },
     createdAt: {
       type: Date,
       default: Date.now,

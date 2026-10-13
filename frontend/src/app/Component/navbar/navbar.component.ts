@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, NgZone } from '@angular/core';
+import { Component, OnInit, AfterViewInit, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,10 @@ import { AuthService } from '../../service/auth.service';
 import { AuthAPIService } from '../../service/auth-api.service';
 import { ThemeService } from '../../service/theme.service';
 import { LanguageService, SUPPORTED_LANGUAGES, Language } from '../../service/language.service';
+import { NotificationService } from '../../service/notification.service';
+import { NotificationDrawerComponent } from '../notification-drawer/notification-drawer.component';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 declare var google: any;
 
@@ -27,17 +30,19 @@ declare var google: any;
   imports: [
     CommonModule, RouterModule, FormsModule,
     MatMenuModule, MatButtonModule, MatIconModule, MatBadgeModule,
-    TranslateModule,
+    TranslateModule, NotificationDrawerComponent,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
-export class NavbarComponent implements OnInit, AfterViewInit {
+export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isloggedIn = false;
   isDark = false;
   languages: Language[] = SUPPORTED_LANGUAGES;
   currentLang = 'en';
   unreadCount = 0;
+  showNotificationDrawer = false;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private router: Router,
@@ -45,16 +50,33 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     private authAPIService: AuthAPIService,
     public themeService: ThemeService,
     private languageService: LanguageService,
+    private notificationService: NotificationService,
     private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
     // Subscribe to authentication state from AuthService
-    this.authService.currentUser$.subscribe(user => {
+    const authSub = this.authService.currentUser$.subscribe(user => {
       this.isloggedIn = user !== null;
+      // Load notifications when user logs in
+      if (user && user['_id']) {
+        this.notificationService.load(user['_id']).subscribe();
+      }
     });
+    this.subscriptions.push(authSub);
+
     this.themeService.theme$.subscribe(t => { this.isDark = t === 'dark'; });
     this.languageService.currentLang$.subscribe(l => { this.currentLang = l; });
+
+    // Subscribe to notifications to update unread count
+    const notifSub = this.notificationService.notifications$.subscribe(notifications => {
+      this.unreadCount = notifications.filter(n => !n.read).length;
+    });
+    this.subscriptions.push(notifSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   ngAfterViewInit(): void {
@@ -218,5 +240,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.ngZone.run(() => {
       this.router.navigate([route]);
     });
+  }
+
+  toggleNotificationDrawer(): void {
+    this.showNotificationDrawer = !this.showNotificationDrawer;
   }
 }

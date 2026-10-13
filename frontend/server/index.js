@@ -64,6 +64,8 @@ app.use('/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 const communityRoutes = require('./routes/community');
 app.use(communityRoutes);
+const notificationRoutes = require('./routes/notification');
+app.use(notificationRoutes);
 
 /**
  * Initialize database connection on application startup

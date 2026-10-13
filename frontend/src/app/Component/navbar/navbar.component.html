@@ -38,6 +38,18 @@
   <!-- Right: controls -->
   <div class="hidden md:flex items-center gap-2">
 
+    <!-- Notification bell (logged in only) -->
+    <button *ngIf="isloggedIn" 
+            class="theme-toggle-btn notification-bell" 
+            (click)="toggleNotificationDrawer()" 
+            [title]="'NOTIFICATIONS.TITLE' | translate"
+            [matBadge]="unreadCount"
+            [matBadgeHidden]="unreadCount === 0"
+            matBadgeSize="small"
+            matBadgeColor="warn">
+      <mat-icon style="color: var(--color-text)">notifications</mat-icon>
+    </button>
+
     <!-- Language selector -->
     <button class="theme-toggle-btn" [matMenuTriggerFor]="langMenu" title="Language">
       <span style="font-size:18px">🌐</span>
@@ -81,4 +93,10 @@
       </mat-menu>
     </ng-container>
   </div>
+
+  <!-- Notification Drawer -->
+  <app-notification-drawer 
+    [isOpen]="showNotificationDrawer" 
+    (close)="showNotificationDrawer = false">
+  </app-notification-drawer>
 </nav>
