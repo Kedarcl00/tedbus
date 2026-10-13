@@ -16,6 +16,7 @@ import { PostCardComponent } from '../post-card/post-card.component';
 })
 export class CommunityFeedComponent implements OnInit {
   posts: Post[] = [];
+  filteredPosts: Post[] = [];
   topics: ForumTopic[] = [];
   total = 0;
   page = 1;
@@ -27,8 +28,14 @@ export class CommunityFeedComponent implements OnInit {
   newTitle = '';
   newBody = '';
   newTags = '';
+  newImageUrl = '';
   selectedTopicId = '';
   submitting = false;
+
+  // Filter and search
+  filterTag = '';
+  searchQuery = '';
+  availableTags: string[] = [];
 
   // Active comment box
   activeCommentPostId: string | null = null;
@@ -58,6 +65,8 @@ export class CommunityFeedComponent implements OnInit {
       next: ({ posts, total }) => {
         this.posts = posts;
         this.total = total;
+        this.extractTags();
+        this.applyFilters();
         this.isLoading = false;
       },
       error: err => {
@@ -65,6 +74,42 @@ export class CommunityFeedComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  extractTags(): void {
+    const tagSet = new Set<string>();
+    this.posts.forEach(post => {
+      post.tags?.forEach(tag => tagSet.add(tag));
+    });
+    this.availableTags = Array.from(tagSet).sort();
+  }
+
+  applyFilters(): void {
+    let result = [...this.posts];
+    
+    // Filter by tag
+    if (this.filterTag) {
+      result = result.filter(p => p.tags?.includes(this.filterTag));
+    }
+    
+    // Filter by search query
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        p.body.toLowerCase().includes(q)
+      );
+    }
+    
+    this.filteredPosts = result;
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  onSearchChange(): void {
+    this.applyFilters();
   }
 
   submitPost(): void {
@@ -80,13 +125,17 @@ export class CommunityFeedComponent implements OnInit {
       title: this.newTitle.trim(),
       body: this.newBody.trim(),
       tags,
+      imageUrl: this.newImageUrl.trim() || null,
       forumTopicId: this.selectedTopicId || null,
     }).subscribe({
       next: post => {
         this.posts.unshift(post);
+        this.extractTags();
+        this.applyFilters();
         this.newTitle = '';
         this.newBody = '';
         this.newTags = '';
+        this.newImageUrl = '';
         this.selectedTopicId = '';
         this.showForm = false;
         this.submitting = false;
@@ -153,6 +202,31 @@ export class CommunityFeedComponent implements OnInit {
         if (hidden) this.posts = this.posts.filter(p => p._id !== postId);
       }
     });
+  }
+
+  onEdit(postId: string): void {
+    // This will be handled by the post-card component
+  }
+
+  onDelete(postId: string): void {
+    this.communityService.deletePost(postId).subscribe({
+      next: () => {
+        this.posts = this.posts.filter(p => p._id !== postId);
+        this.applyFilters();
+      },
+      error: err => {
+        this.error = err?.message || 'Failed to delete post';
+      }
+    });
+  }
+
+  onPostUpdated(updatedPost: Post): void {
+    const idx = this.posts.findIndex(p => p._id === updatedPost._id);
+    if (idx !== -1) {
+      this.posts[idx] = updatedPost;
+      this.extractTags();
+      this.applyFilters();
+    }
   }
 
   topicName(id: string): string {

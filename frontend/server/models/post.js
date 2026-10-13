@@ -7,6 +7,7 @@ const postSchema = new Schema({
   title:       { type: String, required: true, trim: true },
   body:        { type: String, required: true },
   tags:        { type: [String], default: [] },
+  imageUrl:    { type: String, default: null },        // optional image URL
   likes:       { type: [String], default: [] },       // array of userIds
   reportedBy:  { type: [String], default: [] },       // array of userIds
   hidden:      { type: Boolean, default: false },     // auto-hidden when reports >= 5

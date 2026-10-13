@@ -8,6 +8,7 @@ const BASE = `${url}api/v1/community`;
 export interface Post {
   _id: string; authorId: string; authorName: string;
   title: string; body: string; tags: string[];
+  imageUrl?: string;
   likes: string[]; reportedBy: string[]; hidden: boolean;
   shareCount: number; forumTopicId?: string;
   createdAt: string;
@@ -33,6 +34,14 @@ export class CommunityService {
 
   createPost(payload: any): Observable<Post> {
     return this.http.post<Post>(`${BASE}/posts`, payload);
+  }
+
+  updatePost(postId: string, payload: any): Observable<Post> {
+    return this.http.put<Post>(`${BASE}/posts/${postId}`, payload);
+  }
+
+  deletePost(postId: string): Observable<any> {
+    return this.http.delete(`${BASE}/posts/${postId}`);
   }
 
   likePost(postId: string, userId: string): Observable<any> {
