@@ -30,6 +30,11 @@ const userSchema = new Schema(
       type: Object,
       default: { email: true, push: false, inApp: true },
     },
+    preferredLanguage: {
+      type: String,
+      default: 'en',
+      enum: ['en', 'hi', 'mr'],
+    },
     createdAt: {
       type: Date,
       default: Date.now,

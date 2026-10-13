@@ -190,3 +190,76 @@ exports.getPreferences = async (req, res) => {
     });
   }
 };
+
+/**
+ * Update current user's preferred language
+ * PUT /api/users/profile/language
+ * Body: { language: 'en'|'hi'|'mr' }
+ */
+exports.updateLanguage = async (req, res) => {
+  try {
+    const googleId = req.headers['x-user-id'];
+
+    if (!googleId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required',
+          statusCode: 401
+        }
+      });
+    }
+
+    const { language } = req.body;
+
+    // Validate language
+    const validLanguages = ['en', 'hi', 'mr'];
+    if (!language || !validLanguages.includes(language)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_LANGUAGE',
+          message: 'Language must be one of: en, hi, mr',
+          statusCode: 400
+        }
+      });
+    }
+
+    logger.info('Updating user language', { googleId, language });
+
+    // Update user's preferred language
+    const user = await User.findOneAndUpdate(
+      { googleId },
+      { $set: { preferredLanguage: language } },
+      { new: true, lean: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+          statusCode: 404
+        }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      language: user.preferredLanguage
+    });
+
+  } catch (error) {
+    logger.error('Error updating language', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to update language',
+        statusCode: 500
+      }
+    });
+  }
+};

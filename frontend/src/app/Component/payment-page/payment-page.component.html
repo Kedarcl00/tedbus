@@ -3,7 +3,7 @@
     <div class="payment__fullContainer_leftContainer">
         <!-- Payment Method Selector (Requirement 5.1) -->
         <div class="payment-method-selector">
-            <h3 class="payment-method-title">Select Payment Method</h3>
+            <h3 class="payment-method-title">{{ 'PAYMENT.SELECT_METHOD' | translate }}</h3>
             <div class="payment-methods">
                 <label class="payment-method-label">
                     <input 
@@ -13,7 +13,7 @@
                         [(ngModel)]="selectedPaymentMethod" 
                         class="payment-method-radio"
                     />
-                    <span class="payment-method-text">Online Payment</span>
+                    <span class="payment-method-text">{{ 'PAYMENT.ONLINE_PAYMENT' | translate }}</span>
                 </label>
                 <label class="payment-method-label">
                     <input 
@@ -23,7 +23,7 @@
                         [(ngModel)]="selectedPaymentMethod" 
                         class="payment-method-radio"
                     />
-                    <span class="payment-method-text">Cash on Trip</span>
+                    <span class="payment-method-text">{{ 'PAYMENT.CASH_ON_TRIP' | translate }}</span>
                 </label>
             </div>
         </div>
@@ -65,7 +65,7 @@
                 <!-- Payment methods -->
                 <div class="Payment__stripe">
                     <button class="Payment__stripe__button" (click)="makepayment()" [disabled]="isSubmitting">
-                        {{ isSubmitting ? 'Processing...' : 'Proceed to Payment' }}
+                        {{ isSubmitting ? ('PAYMENT.PROCESSING' | translate) : ('PAYMENT.PROCEED_TO_PAYMENT' | translate) }}
                     </button>
                 </div>
                 <!-- Other Payment Methods -->
@@ -153,14 +153,14 @@
         <!-- Cash on Trip Section (Requirement 5.2 - hidden when Online selected) -->
         <div *ngIf="selectedPaymentMethod === 'cash_on_trip'" class="cash-on-trip-section">
             <div class="cash-on-trip-header">
-                <h3>You selected Cash on Trip</h3>
+                <h3>{{ 'PAYMENT.CASH_SELECTED' | translate }}</h3>
             </div>
             <div class="cash-on-trip-message">
-                <p class="cash-on-trip-message-text">Pay the driver ₹{{ passfare }} when you board</p>
-                <p class="cash-on-trip-note">Keep the receipt for your records</p>
+                <p class="cash-on-trip-message-text">{{ 'PAYMENT.PAY_DRIVER' | translate: {amount: passfare} }}</p>
+                <p class="cash-on-trip-note">{{ 'PAYMENT.KEEP_RECEIPT' | translate }}</p>
             </div>
             <button class="confirm-booking-button" (click)="makepayment()" [disabled]="isSubmitting">
-                {{ isSubmitting ? 'Processing...' : 'Confirm Booking' }}
+                {{ isSubmitting ? ('PAYMENT.PROCESSING' | translate) : ('PAYMENT.CONFIRM_BOOKING' | translate) }}
             </button>
         </div>
     </div>

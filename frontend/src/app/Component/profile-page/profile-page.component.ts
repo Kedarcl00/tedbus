@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { BusService } from '../../service/bus.service';
 import { AuthService } from '../../service/auth.service';
@@ -42,7 +43,7 @@ import { MyTripComponent } from './my-trip/my-trip.component';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MyTripComponent],
+  imports: [CommonModule, MatIconModule, TranslateModule, MyTripComponent],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.css',
 })
