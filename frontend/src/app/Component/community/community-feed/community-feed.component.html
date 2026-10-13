@@ -1,0 +1,69 @@
+<div class="community-feed">
+
+  <!-- Header -->
+  <div class="feed-header">
+    <h2>{{ 'COMMUNITY.TITLE' | translate }}</h2>
+    <button class="btn-primary" *ngIf="authService.currentUser" (click)="showForm = !showForm">
+      <mat-icon>add</mat-icon>
+      {{ 'COMMUNITY.NEW_POST' | translate }}
+    </button>
+  </div>
+
+  <!-- Error banner -->
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <!-- New post form -->
+  <div class="post-form" *ngIf="showForm">
+    <input class="form-input" [(ngModel)]="newTitle"
+           [placeholder]="'COMMUNITY.POST_TITLE' | translate" />
+    <textarea class="form-textarea" [(ngModel)]="newBody" rows="4"
+              [placeholder]="'COMMUNITY.WRITE_POST' | translate"></textarea>
+    <input class="form-input" [(ngModel)]="newTags"
+           placeholder="Tags (comma-separated): route, destination, tip" />
+    <select class="form-select" [(ngModel)]="selectedTopicId">
+      <option value="">— No topic —</option>
+      <option *ngFor="let t of topics" [value]="t._id">{{ t.title }}</option>
+    </select>
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="submitting" (click)="submitPost()">
+        {{ submitting ? 'Posting...' : ('COMMUNITY.SUBMIT' | translate) }}
+      </button>
+      <button class="btn-secondary" (click)="showForm = false">
+        {{ 'COMMUNITY.CANCEL' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">Loading posts…</div>
+
+  <!-- Empty -->
+  <div class="empty" *ngIf="!isLoading && posts.length === 0 && !error">
+    No posts yet. Be the first to share your travel story!
+  </div>
+
+  <!-- Posts -->
+  <ng-container *ngFor="let post of posts">
+    <div class="post-wrapper">
+      <div class="post-topic-badge" *ngIf="post.forumTopicId">
+        {{ topicName(post.forumTopicId) }}
+      </div>
+      <app-post-card
+        [post]="post"
+        (like)="onLike($event)"
+        (comment)="onComment($event)"
+        (share)="onShare($event)"
+        (report)="onReport($event)">
+      </app-post-card>
+
+      <!-- Inline comment form -->
+      <div class="comment-form" *ngIf="activeCommentPostId === post._id">
+        <textarea class="form-textarea" [(ngModel)]="commentBody" rows="2"
+                  [placeholder]="'COMMUNITY.ADD_COMMENT' | translate"></textarea>
+        <button class="btn-primary" (click)="submitComment(post._id)">Post</button>
+        <button class="btn-secondary" (click)="activeCommentPostId = null">Cancel</button>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

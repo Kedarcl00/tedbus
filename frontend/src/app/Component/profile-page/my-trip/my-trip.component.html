@@ -1,0 +1,112 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-container">
+  <p style="text-align: center; padding: 20px; font-size: 16px;">Loading your bookings...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error && !isLoading" class="error-container">
+  <p class="error-message" style="color: #c62828; margin: 0; padding: 15px; background-color: #ffebee; border-radius: 4px; border: 1px solid #ef5350;">
+    {{ error }}
+  </p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!isLoading && bookings.length === 0 && !error" class="empty-container">
+  <p style="text-align: center; padding: 20px; font-size: 16px; color: #666;">You don't have any bookings yet.</p>
+</div>
+
+<!-- Bookings List -->
+<div class="SingleTrip" *ngFor="let booking of bookings">
+  <!-- Bus Image -->
+  <div class="SingleTrip__image">
+    <img [src]="getRandomImage(booking._id || booking.id || '')" alt="bus" />
+  </div>
+
+  <!-- Booking Status Section -->
+  <div class="booking-status-section">
+    <!-- Payment Method Badge -->
+    <span class="badge" [ngClass]="'payment-' + booking.paymentMethod">
+      {{ getPaymentMethodLabel(booking.paymentMethod) }}
+    </span>
+
+    <!-- Booking Status Badge -->
+    <span class="badge" [ngClass]="'status-' + booking.status">
+      {{ booking.status | titlecase }}
+    </span>
+
+    <!-- Payment Status Badge (if applicable) -->
+    <span *ngIf="booking.paymentStatus" class="badge" [ngClass]="'payment-status-' + booking.paymentStatus">
+      Payment: {{ booking.paymentStatus | titlecase }}
+    </span>
+  </div>
+
+  <!-- Bus Details and Passenger Details -->
+  <div style="display: flex; justify-content: space-evenly; width: 100%; gap: 20px; flex-wrap: wrap;">
+    <!-- Bus Details Section -->
+    <div class="SingleTrip__busdetails">
+      <div class="heading" style="font-weight: 600; font-size: large; margin-bottom: 15px;">Bus Details</div>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Departure: {{ booking.departureLocation?.name || booking.departureLocation?.city || (booking.departureDetails?.city) || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Departure Time: {{ booking.departureTime || (booking.departureDetails?.time) || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Journey Date: {{ booking.journeyDate || booking.departureDate || booking.bookingDate || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Arrival: {{ booking.arrivalLocation?.name || booking.arrivalLocation?.city || (booking.arrivalDetails?.city) || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Arrival Time: {{ booking.arrivalTime || (booking.arrivalDetails?.time) || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Total Fare: ₹{{ booking.fare }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Seats: {{ booking.seats?.join(', ') || '—' }}
+      </p>
+      <p>
+        <span class="material-icons">radio_button_checked</span>
+        Booking Reference: {{ booking.bookingReference || '—' }}
+      </p>
+    </div>
+
+    <!-- Passenger Details Section -->
+    <div class="SingleTrip__persondetails">
+      <div class="heading" style="font-weight: 600; font-size: large; margin-bottom: 15px;">Passenger Details</div>
+      <p>
+        <span class="material-icons">arrow_right_alt</span> Contact Phone: {{ booking.phoneNumber || '—' }}
+      </p>
+      <div class="SingleTrip__customerDetails__passenger">
+        <!-- Backend returns 'passengers', with passengerDetails as fallback -->
+        <ng-container *ngFor="let passenger of (booking.passengers || booking.passengerDetails || [])">
+          <p><span class="material-icons">arrow_right_alt</span> Name: {{ passenger.name }}</p>
+          <p><span class="material-icons">arrow_right_alt</span> Gender: {{ passenger.gender }}</p>
+          <p><span class="material-icons">arrow_right_alt</span> Age: {{ passenger.age }}</p>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons Section -->
+  <div class="booking-actions">
+    <button
+      *ngIf="canCancelBooking(booking)"
+      (click)="onCancelBooking(booking)"
+      class="cancel-button"
+      [disabled]="isCancellationInProgress((booking._id || booking.id) ?? '')">
+      {{ isCancellationInProgress((booking._id || booking.id) ?? '') ? 'Cancelling...' : 'Cancel Booking' }}
+    </button>
+    <span *ngIf="!canCancelBooking(booking)" class="cannot-cancel-text">
+      This booking cannot be cancelled
+    </span>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "tedbus-refactor",
+  "version": "1.0.0",
+  "description": "TedBus MEAN stack bus booking application with service-oriented architecture",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

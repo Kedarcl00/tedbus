@@ -1,0 +1,254 @@
+<div class="payment__fullContainer">
+    <!-- left Container -->
+    <div class="payment__fullContainer_leftContainer">
+        <!-- Payment Method Selector (Requirement 5.1) -->
+        <div class="payment-method-selector">
+            <h3 class="payment-method-title">Select Payment Method</h3>
+            <div class="payment-methods">
+                <label class="payment-method-label">
+                    <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="online" 
+                        [(ngModel)]="selectedPaymentMethod" 
+                        class="payment-method-radio"
+                    />
+                    <span class="payment-method-text">Online Payment</span>
+                </label>
+                <label class="payment-method-label">
+                    <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="cash_on_trip" 
+                        [(ngModel)]="selectedPaymentMethod" 
+                        class="payment-method-radio"
+                    />
+                    <span class="payment-method-text">Cash on Trip</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Error Message Display -->
+        <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+
+        <!-- Online Payment Section (Requirement 5.2 - hidden when Cash on Trip selected) -->
+        <div *ngIf="selectedPaymentMethod === 'online'" class="online-payment-section">
+            <input class="payment__fullContainer_rightContainer_inputOfferCOde" placeholder="ENTER OFFER CODE" />
+            <div class="payment__fullContainer_rightContainer_infobar">
+                <div class="banner_chip">
+                    <img src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/safe-payments.svg" alt="CC" />
+                    <div class="banner_text">
+                      
+                        <div>Safe and Secure</div>
+                        <div>Online Payments</div>
+                    </div>
+                </div>
+                <div class="banner_chip">
+                    <img src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/transactions.svg"
+                        alt="Million Transactions" />
+                    <div class="banner_text">
+                        <div>60+ million</div>
+                        <div>transactions</div>
+                    </div>
+                </div>
+                <div class="banner_chip">
+                    <img src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/trust.svg" alt="Reliable" />
+                    <div class="banner_text">
+                        <div>10+ years of</div>
+                        <div>Trust</div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment__fullContainer_leftContainer_paymentInstruments">
+                <!-- Payment methods -->
+                <div class="Payment__stripe">
+                    <button class="Payment__stripe__button" (click)="makepayment()" [disabled]="isSubmitting">
+                        {{ isSubmitting ? 'Processing...' : 'Proceed to Payment' }}
+                    </button>
+                </div>
+                <!-- Other Payment Methods -->
+                <div class="choose_payment_heading">Choose Other Payment Method</div>
+                <div class="payment__fullContainer_leftContainer_paymentInstrument">
+                    <!-- Credit Card -->
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                        <input class="radioButton" type="radio" />
+                        <div class="radioButtonText">Credit Card</div>
+                        <div class="paymentIconList">
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/mobile/v2/visa.png"
+                                alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/mobile/v2/mastercard.png"
+                                alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/maestro.png"
+                                alt="" />
+                        </div>
+                    </div>
+                    <!-- Debit Card -->
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                        <input class="radioButton" type="radio" />
+                        <div class="radioButtonText">Debit Card</div>
+                        <div class="paymentIconList">
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/mobile/v2/visa.png"
+                                alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/mobile/v2/mastercard.png"
+                                alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/maestro.png"
+                                alt="" />
+                        </div>
+                    </div>
+                    <!-- Wallets -->
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                        <input class="radioButton" type="radio" />
+                        <div class="radioButtonText">Wallets</div>
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/amazonpay.png" alt="" />
+                    </div>
+                    <!-- Net Banking -->
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                        <input class="radioButton" type="radio" />
+                        <div class="radioButtonText">Net Banking</div>
+                        <div class="paymentIconList">
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/axis.png" alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/sbi.png" alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/hdfc.png" alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/icici.png" alt="" />
+                            <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/kotak.png" alt="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="UpiPaymentText">
+                UPI PAYMENT USING PHONEPAY / GPAY / AMAZONPAY ETC...
+            </div>
+            <div class="payment__fullContainer_leftContainer_paymentInstrument">
+                <!-- UPI payment methods -->
+                <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                    <input class="radioButton" type="radio" />
+                    <div class="radioButtonText">Pay through QR Code</div>
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments_new">New</div>
+                    <div class="paymentIconList">
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/gpay.svg" alt="" />
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/phonepe.svg"
+                            alt="" />
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/amazonpay.svg"
+                            alt="" />
+                    </div>
+                </div>
+                <!-- Pay through UPI ID -->
+                <div class="payment__fullContainer_leftContainer_eachPaymentInstruments">
+                    <input class="radioButton" type="radio" />
+                    <div class="radioButtonText">Pay through UPI ID</div>
+                    <div class="payment__fullContainer_leftContainer_eachPaymentInstruments_new">New</div>
+                    <div class="paymentIconList">
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/gpay.svg" alt="" />
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/phonepe.svg"
+                            alt="" />
+                        <img class="payment_icon_img" src="https://st.redbus.in/paas/images/web/v2/upi/amazonpay.svg"
+                            alt="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cash on Trip Section (Requirement 5.2 - hidden when Online selected) -->
+        <div *ngIf="selectedPaymentMethod === 'cash_on_trip'" class="cash-on-trip-section">
+            <div class="cash-on-trip-header">
+                <h3>You selected Cash on Trip</h3>
+            </div>
+            <div class="cash-on-trip-message">
+                <p class="cash-on-trip-message-text">Pay the driver ₹{{ passfare }} when you board</p>
+                <p class="cash-on-trip-note">Keep the receipt for your records</p>
+            </div>
+            <button class="confirm-booking-button" (click)="makepayment()" [disabled]="isSubmitting">
+                {{ isSubmitting ? 'Processing...' : 'Confirm Booking' }}
+            </button>
+        </div>
+    </div>
+    
+    <div class="payment__fullContainer_rightContainer">
+        <div class="payment__fullContainer_rightContainer_trip_container">
+          <div class="travel_operator_info">
+            <div class="travel_title">{{ operatorname }}</div>
+            <div class="travel_specification">Seater / A/C / Sleeper</div>
+          </div>
+          <div class="line"></div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; width: 200px;">
+              <mat-icon class="icons">date_range</mat-icon>
+              <div style="display: flex; flex-direction: column;">
+                <div class="travel_specification">Booking Date</div>
+                <div style="display: flex; width: 150px;">
+                  <div>{{ bookingdate | date: 'yyyy-MM-dd' }}</div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; margin-right: 10px;">
+              <div>Seats Booked</div>
+              <div>{{ passseatarray }}</div>
+            </div>
+          </div>
+          <div class="line"></div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; width: 150px;">
+              <mat-icon class="icons">location_on</mat-icon>
+              <div style="display: flex; flex-direction: column;">
+                <div class="travel_specification">Boarding Point</div>
+                <div>{{ routedetails.departureLocation.name }}</div>                
+                <div>{{ bookingdate }}</div>
+                <div>{{ busdepauturetime }}</div> 
+                 <div>{{routedetails.departureLocation.name}}</div>
+                
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <div class="travel_specification">Dropping Point</div>
+              <div>{{ routedetails.arrivalLocation.name }}</div> 
+              <div>{{ bookingdate }}</div>
+              <div>{{ busarrivaltime }}</div>
+            </div>
+          </div>
+          <div class="passangerInfo">
+            <mat-icon class="icons">account_box</mat-icon>
+            <div class="passangerName">{{ customerid?.name }}</div>
+          </div>
+        </div>
+        <div class="payment__fullContainer_rightContainer_fair_container">
+          <div style="display: flex; justify-content: space-between;">
+            <div class="travel_title">FARE BREAKUP</div>
+            <img src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/down.svg" width="14" height="14" alt="">
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px;"></div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+            <div class="travel_specification" style="font-weight: bold;">Total Payable</div>
+            <div class="travel_specification" style="font-weight: bold;">₹ {{passfare}}</div>
+          </div>
+          <div *ngIf="selectedPaymentMethod === 'cash_on_trip'" class="payment-method-indicator">
+            <p class="payment-method-label-indicator">Payment Method: <strong>Cash on Trip</strong></p>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-around; margin-top: 10px; width: 95%;">
+          <img class="payment_banner_icon_img" src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/master-card-secure-code.png" alt="">
+          <img class="payment_banner_icon_img" src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/verified-by-visa.svg" alt="">
+          <img class="payment_banner_icon_img" src="https://s3.rdbuz.com/Images/webplatform/Common/Payment/verisign-secured.png" alt="">
+        </div>
+      </div>
+      
+</div>
+
+<!-- Receipt Modal -->
+<div *ngIf="showReceipt" class="receipt-modal-overlay" (click)="closeReceipt()">
+    <div class="receipt-modal" (click)="$event.stopPropagation()">
+        <div class="receipt-header">
+            <h2>Booking Confirmed!</h2>
+            <button class="receipt-close-btn" (click)="closeReceipt()">×</button>
+        </div>
+        <div class="receipt-content" [innerHTML]="receiptHTML"></div>
+        <div class="receipt-actions">
+            <button class="download-receipt-btn" (click)="downloadReceipt()">
+                <mat-icon>print</mat-icon>
+                Download/Print Receipt
+            </button>
+            <button class="close-receipt-btn" (click)="closeReceipt()">Close</button>
+        </div>
+    </div>
+</div>

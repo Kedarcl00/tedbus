@@ -1,0 +1,187 @@
+const Post          = require('../models/post');
+const Comment       = require('../models/comment');
+const ForumTopic    = require('../models/forumTopic');
+const ModerationLog = require('../models/moderationLog');
+
+// ── Posts ─────────────────────────────────────────────────────────────────────
+
+// GET /api/v1/community/posts?forumTopicId=&page=1&limit=20
+exports.getPosts = async (req, res) => {
+  try {
+    const { forumTopicId, page = 1, limit = 20 } = req.query;
+    const filter = { hidden: false };
+    if (forumTopicId) filter.forumTopicId = forumTopicId;
+    const posts = await Post.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .lean();
+    const total = await Post.countDocuments(filter);
+    res.json({ posts, total, page: Number(page) });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/posts  (protected by verifiedGuard)
+exports.createPost = async (req, res) => {
+  try {
+    const { userId, authorName, title, body, tags, forumTopicId } = req.body;
+    if (!title?.trim() || !body?.trim()) return res.sendError('VALIDATION', 400);
+    const post = await Post.create({
+      authorId: userId, authorName, title, body,
+      tags: tags || [], forumTopicId: forumTopicId || null,
+    });
+    if (forumTopicId) {
+      await ForumTopic.findByIdAndUpdate(forumTopicId, { $inc: { postCount: 1 } });
+    }
+    res.status(201).json(post);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/posts/:id/like
+exports.likePost = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.sendError('NOT_FOUND', 404);
+    const idx = post.likes.indexOf(userId);
+    if (idx === -1) post.likes.push(userId);
+    else post.likes.splice(idx, 1);       // toggle unlike
+    await post.save();
+    res.json({ likes: post.likes.length });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/posts/:id/report
+exports.reportPost = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.sendError('NOT_FOUND', 404);
+    if (!post.reportedBy.includes(userId)) {
+      post.reportedBy.push(userId);
+      await post.save();   // pre-save hook handles auto-hide at >= 5 reports
+    }
+    res.json({ reports: post.reportedBy.length, hidden: post.hidden });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/posts/:id/share
+exports.sharePost = async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(
+      req.params.id, { $inc: { shareCount: 1 } }, { new: true }
+    );
+    if (!post) return res.sendError('NOT_FOUND', 404);
+    res.json({ shareCount: post.shareCount });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// ── Comments ──────────────────────────────────────────────────────────────────
+
+// GET /api/v1/community/comments?postId=xxx
+exports.getComments = async (req, res) => {
+  try {
+    const { postId } = req.query;
+    if (!postId) return res.sendError('VALIDATION', 400);
+    const comments = await Comment.find({ postId, hidden: false })
+      .sort({ createdAt: 1 })
+      .lean();
+    res.json(comments);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/comments  (protected by verifiedGuard)
+exports.createComment = async (req, res) => {
+  try {
+    const { userId, authorName, postId, body } = req.body;
+    if (!body?.trim()) return res.sendError('VALIDATION', 400);
+    const comment = await Comment.create({
+      postId, authorId: userId, authorName, body,
+    });
+    res.status(201).json(comment);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/comments/:id/report
+exports.reportComment = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const comment = await Comment.findById(req.params.id);
+    if (!comment) return res.sendError('NOT_FOUND', 404);
+    if (!comment.reportedBy.includes(userId)) {
+      comment.reportedBy.push(userId);
+      await comment.save();
+    }
+    res.json({ reports: comment.reportedBy.length, hidden: comment.hidden });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// ── Forum Topics ──────────────────────────────────────────────────────────────
+
+// GET /api/v1/community/topics
+exports.getTopics = async (req, res) => {
+  try {
+    const topics = await ForumTopic.find().sort({ pinned: -1, createdAt: -1 }).lean();
+    res.json(topics);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// POST /api/v1/community/topics  (protected by verifiedGuard)
+exports.createTopic = async (req, res) => {
+  try {
+    const { userId, title, description } = req.body;
+    if (!title?.trim()) return res.sendError('VALIDATION', 400);
+    const topic = await ForumTopic.create({ title, description, createdBy: userId });
+    res.status(201).json(topic);
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};
+
+// ── Moderation ────────────────────────────────────────────────────────────────
+
+// POST /api/v1/community/moderate
+exports.moderate = async (req, res) => {
+  try {
+    const { moderatorId, targetType, targetId, action, reason } = req.body;
+    if (!moderatorId || !targetType || !targetId || !action) {
+      return res.sendError('VALIDATION', 400);
+    }
+    const Model = targetType === 'post' ? Post : Comment;
+    const hidden = action === 'hide' || action === 'delete';
+    await Model.findByIdAndUpdate(targetId, { hidden });
+    await ModerationLog.create({ moderatorId, targetType, targetId, action, reason: reason || '' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.sendError('SERVER_ERROR', 500);
+  }
+};

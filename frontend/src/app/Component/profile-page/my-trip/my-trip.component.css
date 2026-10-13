@@ -1,0 +1,167 @@
+.SingleTrip {
+  border: 1px solid green;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  width: 90%;
+  height: 100%;
+  margin: 20px auto;
+  justify-content: space-evenly;
+  align-items: center;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
+  border: 1px solid #f0f1f2;
+  background-color: #fff;
+}
+
+.SingleTrip__image img {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.booking-status-section {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  display: inline-block;
+}
+
+.payment-online {
+  background-color: #2196f3; /* Blue for online */
+}
+
+.payment-cash_on_trip {
+  background-color: #4caf50; /* Green for cash on trip */
+}
+
+.status-confirmed {
+  background-color: #4caf50; /* Green */
+}
+
+.status-pending {
+  background-color: #ffc107; /* Amber */
+}
+
+.status-in_progress {
+  background-color: #2196f3; /* Blue */
+}
+
+.status-completed {
+  background-color: #999; /* Gray */
+}
+
+.status-cancelled {
+  background-color: #f44336; /* Red */
+}
+
+.payment-status-pending {
+  background-color: #ffc107; /* Amber */
+}
+
+.payment-status-completed {
+  background-color: #4caf50; /* Green */
+}
+
+.payment-status-failed {
+  background-color: #f44336; /* Red */
+}
+
+.SingleTrip__busdetails {
+  line-height: 29px;
+  width: 100%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
+  border: 1px solid silver;
+}
+
+.SingleTrip__persondetails {
+  line-height: 29px;
+  padding: 40px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
+  border: 1px solid silver;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+  width: 100%;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: #d32f2f;
+}
+
+.cancel-button:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cannot-cancel-text {
+  color: #999;
+  font-size: 14px;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.loading-container,
+.error-container,
+.empty-container {
+  padding: 20px;
+  text-align: center;
+  width: 90%;
+  margin: 20px auto;
+}
+
+.error-container {
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #c62828;
+  margin: 0;
+}
+
+.SingleTrip__customerDetails__passenger {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
