@@ -67,6 +67,13 @@ app.use(communityRoutes);
 const notificationRoutes = require('./routes/notification');
 app.use(notificationRoutes);
 
+// Route Planner routes
+const routePlannerController = require('./controller/route-planner');
+app.get('/api/route-planner/routes', routePlannerController.getSavedRoutes);
+app.post('/api/route-planner/routes', routePlannerController.saveRoute);
+app.delete('/api/route-planner/routes/:id', routePlannerController.deleteRoute);
+app.post('/api/route-planner/calculate', routePlannerController.calculateRoute);
+
 /**
  * Initialize database connection on application startup
  */

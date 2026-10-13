@@ -1,0 +1,217 @@
+<div class="route-planner-container">
+  <div class="route-planner-header">
+    <h1>Interactive Route Planner</h1>
+    <p>Plan your journey with multiple stops and waypoints</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="message error-message">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="message success-message">
+    {{ successMessage }}
+  </div>
+
+  <div class="route-planner-content">
+    <!-- Route Input Section -->
+    <div class="route-input-section">
+      <h2>Plan Your Route</h2>
+      
+      <div class="input-group">
+        <label for="origin">Origin</label>
+        <input
+          type="text"
+          id="origin"
+          [(ngModel)]="origin"
+          list="cities-list"
+          placeholder="Enter starting location"
+          class="route-input"
+        />
+      </div>
+
+      <!-- Waypoints -->
+      <div class="waypoints-section" *ngIf="waypoints.length > 0">
+        <div *ngFor="let waypoint of waypoints; let i = index" class="waypoint-item">
+          <label>Waypoint {{ i + 1 }}</label>
+          <div class="waypoint-controls">
+            <input
+              type="text"
+              [(ngModel)]="waypoint.address"
+              list="cities-list"
+              placeholder="Enter stop location"
+              class="route-input"
+            />
+            <div class="waypoint-buttons">
+              <button
+                type="button"
+                (click)="moveWaypointUp(i)"
+                [disabled]="i === 0"
+                class="btn-icon"
+                title="Move up"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                (click)="moveWaypointDown(i)"
+                [disabled]="i === waypoints.length - 1"
+                class="btn-icon"
+                title="Move down"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                (click)="removeWaypoint(i)"
+                class="btn-icon btn-danger"
+                title="Remove"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" (click)="addWaypoint()" class="btn-secondary">
+        + Add Waypoint
+      </button>
+
+      <div class="input-group">
+        <label for="destination">Destination</label>
+        <input
+          type="text"
+          id="destination"
+          [(ngModel)]="destination"
+          list="cities-list"
+          placeholder="Enter destination location"
+          class="route-input"
+        />
+      </div>
+
+      <!-- City autocomplete datalist -->
+      <datalist id="cities-list">
+        <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+      </datalist>
+
+      <button
+        type="button"
+        (click)="calculateRoute()"
+        [disabled]="isCalculating || !origin || !destination"
+        class="btn-primary"
+      >
+        {{ isCalculating ? 'Calculating...' : 'Calculate Route' }}
+      </button>
+
+      <!-- Calculated Route Details -->
+      <div *ngIf="calculatedRoute" class="route-details">
+        <h3>Route Details</h3>
+        <div class="detail-item">
+          <strong>Distance:</strong> {{ calculatedRoute.distance }}
+        </div>
+        <div class="detail-item">
+          <strong>Duration:</strong> {{ calculatedRoute.duration }}
+        </div>
+        <div *ngIf="calculatedRoute.alternatives && calculatedRoute.alternatives.length > 0" class="alternatives">
+          <h4>Alternative Routes</h4>
+          <div *ngFor="let alt of calculatedRoute.alternatives; let i = index" class="alternative-item">
+            <strong>Route {{ i + 1 }}:</strong> {{ alt.distance }} - {{ alt.duration }}
+          </div>
+        </div>
+
+        <!-- Save Route Section (only for authenticated users) -->
+        <div *ngIf="isAuthenticated" class="save-route-section">
+          <h4>Save This Route</h4>
+          <div class="input-group">
+            <label for="routeName">Route Name</label>
+            <input
+              type="text"
+              id="routeName"
+              [(ngModel)]="routeName"
+              placeholder="e.g., Daily Commute"
+              class="route-input"
+            />
+          </div>
+          <button
+            type="button"
+            (click)="saveRoute()"
+            [disabled]="isSaving || !routeName"
+            class="btn-primary"
+          >
+            {{ isSaving ? 'Saving...' : 'Save Route' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Placeholder Section -->
+    <div class="map-section">
+      <div class="map-placeholder">
+        <div class="map-info">
+          <h3>📍 Map Display</h3>
+          <p>
+            Map display requires a Google Maps or Mapbox API key.
+          </p>
+          <p class="map-note">
+            Set <code>GOOGLE_MAPS_API_KEY</code> or <code>MAPBOX_API_KEY</code> in your .env file to enable interactive maps.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved Routes Section (only for authenticated users) -->
+  <div *ngIf="isAuthenticated" class="saved-routes-section">
+    <h2>My Saved Routes</h2>
+    
+    <div *ngIf="isLoadingSavedRoutes" class="loading-message">
+      Loading saved routes...
+    </div>
+
+    <div *ngIf="!isLoadingSavedRoutes && savedRoutes.length === 0" class="empty-message">
+      No saved routes yet. Calculate and save a route to see it here.
+    </div>
+
+    <div *ngIf="!isLoadingSavedRoutes && savedRoutes.length > 0" class="saved-routes-list">
+      <div *ngFor="let route of savedRoutes" class="saved-route-item">
+        <div class="saved-route-header">
+          <h3>{{ route.name }}</h3>
+          <div class="saved-route-actions">
+            <button
+              type="button"
+              (click)="loadSavedRoute(route)"
+              class="btn-secondary btn-small"
+            >
+              Load
+            </button>
+            <button
+              type="button"
+              (click)="deleteRoute(route._id)"
+              class="btn-danger btn-small"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="saved-route-details">
+          <p><strong>From:</strong> {{ route.origin.address }}</p>
+          <p *ngIf="route.waypoints && route.waypoints.length > 0">
+            <strong>Via:</strong> {{ getWaypointsDisplay(route.waypoints) }}
+          </p>
+          <p><strong>To:</strong> {{ route.destination.address }}</p>
+          <div class="saved-route-meta">
+            <span>{{ route.distance }}</span> • <span>{{ route.duration }}</span>
+          </div>
+          <p class="saved-route-date">
+            Saved on {{ route.createdAt | date: 'medium' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign-in prompt for unauthenticated users -->
+  <div *ngIf="!isAuthenticated" class="auth-prompt">
+    <p>📝 Sign in to save and manage your routes</p>
+  </div>
+</div>

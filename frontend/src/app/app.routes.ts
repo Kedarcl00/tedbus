@@ -6,11 +6,13 @@ import { ProfilePageComponent } from './Component/profile-page/profile-page.comp
 import { authGuard } from './guards/auth.guard';
 import { CommunityPageComponent } from './Component/community/community-page/community-page.component';
 import { MyTripComponent } from './Component/profile-page/my-trip/my-trip.component';
+import { RoutePlannerComponent } from './Component/route-planner/route-planner.component';
 
 export const routes: Routes = [
   // Public routes — accessible without signing in
   { path: '', component: LandingPageComponent },
   { path: 'select-bus', component: SelectbusPageComponent },
+  { path: 'route-planner', component: RoutePlannerComponent },
 
   // Protected routes — require Google Sign-In
   { path: 'payment', component: PaymentPageComponent, canActivate: [authGuard] },
