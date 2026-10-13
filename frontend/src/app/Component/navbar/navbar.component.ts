@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -45,6 +45,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     private authAPIService: AuthAPIService,
     public themeService: ThemeService,
     private languageService: LanguageService,
+    private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -143,37 +144,40 @@ export class NavbarComponent implements OnInit, AfterViewInit {
    * @private
    */
   handleGoogleLogin(response: any): void {
-    if (!response.credential) {
-      console.error('No credential received from Google');
-      return;
-    }
-
-    // Decode the JWT token to get Google user data
-    const payload = this.decodeJWT(response.credential);
-    if (!payload) {
-      console.error('Failed to decode Google token');
-      return;
-    }
-
-    // Send Google user data to backend for authentication
-    this.authAPIService.loginWithGoogle(payload).subscribe({
-      next: (response) => {
-        // Backend returned authenticated user
-        if (response.success && response.user) {
-          // Store user in local session using AuthService
-          this.authService.setUser(response.user);
-          console.log('Google Sign-In successful:', response.user);
-          // Redirect to home page or booking page
-          this.router.navigate(['/']);
-        } else {
-          console.error('Authentication failed:', response);
-        }
-      },
-      error: (error) => {
-        console.error('Google Sign-In request failed:', error);
-        // Show error message to user (implement toast/snackbar later)
-        alert('Sign-in failed. Please try again.');
+    // Run inside Angular zone to ensure proper change detection
+    this.ngZone.run(() => {
+      if (!response.credential) {
+        console.error('No credential received from Google');
+        return;
       }
+
+      // Decode the JWT token to get Google user data
+      const payload = this.decodeJWT(response.credential);
+      if (!payload) {
+        console.error('Failed to decode Google token');
+        return;
+      }
+
+      // Send Google user data to backend for authentication
+      this.authAPIService.loginWithGoogle(payload).subscribe({
+        next: (response) => {
+          // Backend returned authenticated user
+          if (response.success && response.user) {
+            // Store user in local session using AuthService
+            this.authService.setUser(response.user);
+            console.log('Google Sign-In successful:', response.user);
+            // Redirect to home page or booking page
+            this.router.navigate(['/']);
+          } else {
+            console.error('Authentication failed:', response);
+          }
+        },
+        error: (error) => {
+          console.error('Google Sign-In request failed:', error);
+          // Show error message to user (implement toast/snackbar later)
+          alert('Sign-in failed. Please try again.');
+        }
+      });
     });
   }
 
@@ -185,23 +189,34 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     // Call backend logout endpoint
     this.authAPIService.logout().subscribe({
       next: () => {
-        // Clear local session
+        // Disable Google auto-select
         if (typeof google !== 'undefined' && google?.accounts?.id) {
           google.accounts.id.disableAutoSelect();
         }
-        this.authService.clearUser();
-        this.router.navigate(['/']);
+        // Clear local session
+        this.authService.logout();
+        // Navigate to home
+        this.ngZone.run(() => {
+          this.router.navigate(['/']);
+        });
       },
       error: (error) => {
         console.error('Logout failed:', error);
         // Clear local session even if backend logout fails
-        this.authService.clearUser();
-        this.router.navigate(['/']);
+        if (typeof google !== 'undefined' && google?.accounts?.id) {
+          google.accounts.id.disableAutoSelect();
+        }
+        this.authService.logout();
+        this.ngZone.run(() => {
+          this.router.navigate(['/']);
+        });
       }
     });
   }
 
   navigate(route: string): void {
-    this.router.navigate([route]);
+    this.ngZone.run(() => {
+      this.router.navigate([route]);
+    });
   }
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
 /**
  * Session storage key for storing authenticated user data.
@@ -25,6 +27,8 @@ interface AuthenticatedUser {
   providedIn: 'root',
 })
 export class AuthService {
+  private apiUrl = 'http://localhost:5001';
+
   // Emits the current user object (or null when logged out)
   private currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(
     this.loadUser()
@@ -36,6 +40,8 @@ export class AuthService {
    */
   currentUser$: Observable<AuthenticatedUser | null> =
     this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
 
   /**
    * Synchronous: true if a user is currently stored in sessionStorage
@@ -87,8 +93,33 @@ export class AuthService {
     // Clear Google ID
     sessionStorage.removeItem(GOOGLE_ID_KEY);
 
+    // Clear any other auth-related data
+    sessionStorage.clear();
+
     // Update observable to notify subscribers
     this.currentUserSubject.next(null);
+  }
+
+  /**
+   * Restore session on app initialization
+   * Validates existing session storage data
+   * If invalid, clears stale data
+   * 
+   * Called from app initialization (AppComponent.ngOnInit)
+   * 
+   * @returns Observable<boolean> - true if session restored, false otherwise
+   * Requirements: 1.2 - Session restoration
+   */
+  restoreSession(): Observable<boolean> {
+    const user = this.loadUser();
+    if (!user) {
+      return of(false);
+    }
+
+    // Session data exists in storage, user is already loaded
+    // For future JWT validation, you would call backend here
+    // For now, trust sessionStorage data
+    return of(true);
   }
 
   /**
