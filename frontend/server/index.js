@@ -19,7 +19,7 @@ const corsOptions = {
   credentials: true,           // Allow cookies and auth headers
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id']  // Added X-User-Id
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Role']  // Added X-User-Id and X-User-Role
 };
 
 app.use(cors(corsOptions));
@@ -66,6 +66,8 @@ const communityRoutes = require('./routes/community');
 app.use(communityRoutes);
 const notificationRoutes = require('./routes/notification');
 app.use(notificationRoutes);
+const reviewRoutes = require('./routes/review');
+app.use(reviewRoutes);
 
 // Route Planner routes
 const routePlannerController = require('./controller/route-planner');

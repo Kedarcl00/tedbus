@@ -1,0 +1,56 @@
+<div class="review-list">
+  <!-- Average Rating Badge -->
+  <div class="review-summary">
+    <div class="average-rating">
+      <div class="rating-number">{{ averageRating.toFixed(1) }}</div>
+      <div class="rating-stars">
+        <mat-icon
+          *ngFor="let star of getRatingStars()"
+          [class.filled]="star <= Math.round(averageRating)"
+        >
+          {{ star <= Math.round(averageRating) ? 'star' : 'star_border' }}
+        </mat-icon>
+      </div>
+      <div class="review-count">Based on {{ totalReviews }} review{{ totalReviews !== 1 ? 's' : '' }}</div>
+    </div>
+  </div>
+
+  <!-- Review Form (if user can review or editing) -->
+  <app-review-form
+    *ngIf="(canReview && !userExistingReview) || (showEditForm && userExistingReview)"
+    [busId]="busId"
+    [bookingId]="userBookingId!"
+    [existingReview]="showEditForm ? userExistingReview : null"
+    [canReview]="canReview"
+    (reviewSubmitted)="onReviewSubmitted()"
+    (reviewEdited)="onReviewEdited()"
+  ></app-review-form>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    Loading reviews...
+  </div>
+
+  <!-- No Reviews State -->
+  <div class="no-reviews" *ngIf="!isLoading && totalReviews === 0">
+    <mat-icon>rate_review</mat-icon>
+    <p>No reviews yet. Be the first to review this bus!</p>
+  </div>
+
+  <!-- Review Items -->
+  <div class="reviews-container" *ngIf="!isLoading && totalReviews > 0">
+    <h3 class="reviews-title">Reviews ({{ totalReviews }})</h3>
+    <app-review-item
+      *ngFor="let review of reviews"
+      [review]="review"
+      [currentUserId]="currentUserId"
+      [currentUserRole]="currentUserRole"
+      (helpfulClicked)="onHelpfulClicked($event)"
+      (reportClicked)="onReportClicked($event)"
+      (editClicked)="onEditClicked($event)"
+      (deleteClicked)="onDeleteClicked($event)"
+      (moderateClicked)="onModerateClicked($event)"
+    ></app-review-item>
+  </div>
+</div>

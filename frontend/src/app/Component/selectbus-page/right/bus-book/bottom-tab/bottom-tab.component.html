@@ -13,7 +13,9 @@
 
 <div class="displayArea" *ngIf="tabstate[0]">Amenities</div>
 <div class="displayArea" *ngIf="tabstate[1]"> Boarding and Droping Points</div>
-<div class="displayArea" *ngIf="tabstate[2]">Reviews</div>
+<div class="displayArea" *ngIf="tabstate[2]">
+    <app-review-list [busId]="busid"></app-review-list>
+</div>
 <div class="displayArea" *ngIf="tabstate[3]">Booking Policies</div>
 <div class="displayArea" *ngIf="tabstate[4]">
     <app-view-seats [filledseats]="filledseats" [seatprice]="seatprice" [routedetails]="routedetials" [busid]="busid"

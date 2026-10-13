@@ -1,0 +1,61 @@
+<div class="review-form" *ngIf="canReview || (isEditMode && canEdit)">
+  <h3 class="form-title">
+    {{ isEditMode ? 'Edit Your Review' : 'Write a Review' }}
+  </h3>
+
+  <!-- Star Rating Selector -->
+  <div class="rating-selector">
+    <label>Your Rating:</label>
+    <div class="stars">
+      <span
+        *ngFor="let star of [1, 2, 3, 4, 5]"
+        class="star"
+        [class.filled]="star <= (hoveredRating || rating)"
+        (click)="setRating(star)"
+        (mouseenter)="setHoveredRating(star)"
+        (mouseleave)="clearHover()"
+      >
+        <mat-icon>{{ star <= (hoveredRating || rating) ? 'star' : 'star_border' }}</mat-icon>
+      </span>
+    </div>
+  </div>
+
+  <!-- Review Text Area -->
+  <div class="form-group">
+    <label for="reviewText">Your Review (minimum 20 characters):</label>
+    <textarea
+      id="reviewText"
+      [(ngModel)]="reviewText"
+      rows="5"
+      placeholder="Share your experience with this bus service..."
+      [disabled]="isSubmitting"
+    ></textarea>
+    <div class="char-count">{{ reviewText.length }} / 20 minimum</div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="successMessage">
+    <mat-icon>check_circle</mat-icon>
+    {{ successMessage }}
+  </div>
+
+  <!-- Submit Button -->
+  <button
+    class="submit-button"
+    (click)="submitReview()"
+    [disabled]="isSubmitting"
+  >
+    {{ isSubmitting ? 'Submitting...' : (isEditMode ? 'Update Review' : 'Submit Review') }}
+  </button>
+
+  <div class="edit-notice" *ngIf="isEditMode && !canEdit">
+    <mat-icon>info</mat-icon>
+    Reviews can only be edited within 24 hours of creation.
+  </div>
+</div>
