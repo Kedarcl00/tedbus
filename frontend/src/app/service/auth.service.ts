@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { ThemeService } from './theme.service';
 
 /**
  * Session storage key for storing authenticated user data.
@@ -20,6 +21,7 @@ interface AuthenticatedUser {
   name: string;
   email: string;
   picture?: string;
+  theme?: 'light' | 'dark';
   [key: string]: any;
 }
 
@@ -41,7 +43,10 @@ export class AuthService {
   currentUser$: Observable<AuthenticatedUser | null> =
     this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private themeService: ThemeService
+  ) {}
 
   /**
    * Synchronous: true if a user is currently stored in sessionStorage
@@ -78,6 +83,11 @@ export class AuthService {
 
     // Update observable to notify subscribers
     this.currentUserSubject.next(user);
+
+    // Sync theme preference from user profile
+    if (user.theme && (user.theme === 'light' || user.theme === 'dark')) {
+      this.themeService.setTheme(user.theme);
+    }
   }
 
   /**

@@ -35,6 +35,11 @@ const userSchema = new Schema(
       default: 'en',
       enum: ['en', 'hi', 'mr'],
     },
+    theme: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'light',
+    },
     createdAt: {
       type: Date,
       default: Date.now,

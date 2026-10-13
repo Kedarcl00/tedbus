@@ -1,5 +1,5 @@
 .SingleTrip {
-  border: 1px solid green;
+  border: 1px solid var(--color-border);
   margin-top: 20px;
   margin-bottom: 20px;
   display: flex;
@@ -11,9 +11,8 @@
   justify-content: space-evenly;
   align-items: center;
   border-radius: 4px;
-  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
-  border: 1px solid #f0f1f2;
-  background-color: #fff;
+  box-shadow: 0 4px 8px 0 var(--color-shadow);
+  background-color: var(--color-card);
 }
 
 .bookings-page-header {
@@ -27,12 +26,12 @@
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 8px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .page-subtitle {
   font-size: 16px;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -44,11 +43,11 @@
 .section-title {
   font-size: 22px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   margin: 20px auto 10px;
   padding: 0 5%;
   text-align: left;
-  border-bottom: 2px solid #d32f2f;
+  border-bottom: 2px solid var(--color-primary);
   padding-bottom: 10px;
   width: 90%;
 }
@@ -125,19 +124,23 @@
   display: flex;
   flex-direction: column;
   border-radius: 4px;
-  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
-  border: 1px solid silver;
+  box-shadow: 0 4px 8px 0 var(--color-shadow);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card);
+  color: var(--color-text);
 }
 
 .SingleTrip__persondetails {
   line-height: 29px;
   padding: 40px;
   border-radius: 4px;
-  box-shadow: 0 4px 8px 0 hsla(0, 0%, 75%, 0.5);
-  border: 1px solid silver;
+  box-shadow: 0 4px 8px 0 var(--color-shadow);
+  border: 1px solid var(--color-border);
   width: 100%;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-card);
+  color: var(--color-text);
 }
 
 .booking-actions {
@@ -200,7 +203,7 @@
 .SingleTrip__customerDetails__passenger {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 
 /* Responsive adjustments */
