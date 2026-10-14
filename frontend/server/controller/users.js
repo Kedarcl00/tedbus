@@ -51,6 +51,9 @@ exports.getProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       picture: user.picture,
+      phone: user.phone || '',
+      gender: user.gender || '',
+      dateOfBirth: user.dateOfBirth || null,
       preferences: user.preferences || {},
       theme: user.theme || 'light',
       createdAt: user.createdAt,
@@ -89,7 +92,7 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    const { name, phone, picture, preferences, theme } = req.body;
+    const { name, phone, gender, dateOfBirth, picture, preferences, theme } = req.body;
 
     logger.info('Updating profile', { googleId });
 
@@ -99,7 +102,9 @@ exports.updateProfile = async (req, res) => {
       {
         $set: {
           ...(name && { name }),
-          ...(phone && { phone }),
+          ...(phone !== undefined && { phone }),
+          ...(gender !== undefined && { gender }),
+          ...(dateOfBirth !== undefined && { dateOfBirth }),
           ...(picture && { picture }),
           ...(preferences && { preferences }),
           ...(theme && { theme }),
@@ -127,7 +132,9 @@ exports.updateProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       picture: user.picture,
-      phone: user.phone,
+      phone: user.phone || '',
+      gender: user.gender || '',
+      dateOfBirth: user.dateOfBirth || null,
       preferences: user.preferences || {},
       theme: user.theme || 'light',
       createdAt: user.createdAt,

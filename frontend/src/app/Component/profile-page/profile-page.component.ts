@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BusService } from '../../service/bus.service';
 import { AuthService } from '../../service/auth.service';
@@ -43,7 +44,7 @@ import { MyTripComponent } from './my-trip/my-trip.component';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, MatIconModule, TranslateModule, MyTripComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, TranslateModule, MyTripComponent],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.css',
 })
@@ -55,6 +56,18 @@ export class ProfilePageComponent implements OnInit {
   isLoading: boolean = true;
   profileError: string | null = null;
   userProfile: UserProfile | null = null;
+
+  // Profile Edit state
+  isEditing: boolean = false;
+  isSaving: boolean = false;
+  saveSuccessMessage: string | null = null;
+  saveErrorMessage: string | null = null;
+  editForm = {
+    name: '',
+    phone: '',
+    gender: '',
+    dateOfBirth: '',
+  };
   
   // Legacy properties (kept for backward compatibility during transition)
   currentcustomer: any = null;
@@ -141,6 +154,89 @@ export class ProfilePageComponent implements OnInit {
         }
         this.isLoading = false;
         console.error('Error fetching profile:', error);
+      },
+    });
+  }
+
+  /**
+   * Start editing profile
+   */
+  startEditing(): void {
+    if (!this.userProfile) return;
+    let dob = '';
+    if (this.userProfile.dateOfBirth) {
+      const d = new Date(this.userProfile.dateOfBirth);
+      if (!isNaN(d.getTime())) {
+        dob = d.toISOString().split('T')[0];
+      }
+    }
+    this.editForm = {
+      name: this.userProfile.name || '',
+      phone: this.userProfile.phone || '',
+      gender: this.userProfile.gender || '',
+      dateOfBirth: dob,
+    };
+    this.saveSuccessMessage = null;
+    this.saveErrorMessage = null;
+    this.isEditing = true;
+  }
+
+  /**
+   * Cancel profile editing
+   */
+  cancelEditing(): void {
+    this.isEditing = false;
+    this.saveErrorMessage = null;
+  }
+
+  /**
+   * Save updated profile
+   */
+  saveProfile(): void {
+    if (!this.editForm.name.trim()) {
+      this.saveErrorMessage = 'Name cannot be empty';
+      return;
+    }
+
+    this.isSaving = true;
+    this.saveErrorMessage = null;
+    this.saveSuccessMessage = null;
+
+    const updateData = {
+      name: this.editForm.name.trim(),
+      phone: this.editForm.phone.trim(),
+      gender: this.editForm.gender,
+      dateOfBirth: this.editForm.dateOfBirth || undefined,
+    };
+
+    this.customerService.updateProfile(updateData).subscribe({
+      next: (updatedProfile: UserProfile) => {
+        this.userProfile = updatedProfile;
+        this.currentname = updatedProfile.name || this.currentname;
+        this.isSaving = false;
+        this.isEditing = false;
+        this.saveSuccessMessage = 'Profile updated successfully!';
+
+        // Update sessionStorage user data so other components stay in sync
+        const currentUserStr = sessionStorage.getItem('Loggedinuser');
+        if (currentUserStr) {
+          try {
+            const parsed = JSON.parse(currentUserStr);
+            parsed.name = updatedProfile.name;
+            if (updatedProfile.phone) parsed.phone = updatedProfile.phone;
+            sessionStorage.setItem('Loggedinuser', JSON.stringify(parsed));
+          } catch (e) {
+            console.error('Failed to update sessionStorage user', e);
+          }
+        }
+
+        setTimeout(() => {
+          this.saveSuccessMessage = null;
+        }, 4000);
+      },
+      error: (err: any) => {
+        this.isSaving = false;
+        this.saveErrorMessage = err.message || 'Failed to update profile. Please try again.';
       },
     });
   }

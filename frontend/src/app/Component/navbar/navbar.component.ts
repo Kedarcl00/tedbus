@@ -59,8 +59,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     const authSub = this.authService.currentUser$.subscribe(user => {
       this.isloggedIn = user !== null;
       // Load notifications when user logs in
-      if (user && user['_id']) {
-        this.notificationService.load(user['_id']).subscribe();
+      if (user && (user['id'] || user['_id'])) {
+        this.notificationService.load(user['id'] || user['_id']).subscribe();
       }
     });
     this.subscriptions.push(authSub);

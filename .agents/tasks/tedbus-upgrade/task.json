@@ -1,0 +1,7 @@
+{
+  "task_id": "task-tedbus-feature-upgrade",
+  "task_description": "Implement six new TedBus features: Community Platform enhancements, Advanced Notification System with navbar integration, Full i18n with Marathi support, Interactive Route Planning Tool, Persistent Dark Mode with backend storage, and Post-Journey Ratings & Reviews system",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005", "FEAT-006"],
+  "blocked_reason": null
+}

@@ -9,5 +9,6 @@ router.get("/booking/:id",bookingController.getBooking);
 router.get("/api/bookings/my", bookingController.getMyBookings);
 router.post("/api/bookings", bookingController.createBooking);
 router.get("/api/bookings/:id", bookingController.getBookingById);
+router.delete("/api/bookings/:id", bookingController.cancelBooking);
 
 module.exports=router;

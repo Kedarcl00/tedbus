@@ -3,7 +3,8 @@
  */
 
 const Review = require('../models/Review');
-const Booking = require('../../../src/models/Booking');
+const Booking = require('../models/booking');
+const User = require('../models/User');
 
 /**
  * POST /api/reviews — Submit a new review
@@ -39,11 +40,16 @@ exports.submitReview = async (req, res) => {
       return res.sendError('NOT_FOUND', 404, 'Booking not found');
     }
 
+
     if (booking.customerId.toString() !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: 'Booking does not belong to user', statusCode: 403 }
-      });
+      // userId is a googleId — resolve to MongoDB _id for comparison
+      const user = await User.findOne({ googleId: userId }).select('_id').lean().exec();
+      if (!user || booking.customerId.toString() !== user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'Booking does not belong to user', statusCode: 403 }
+        });
+      }
     }
 
     // Validate journey is completed

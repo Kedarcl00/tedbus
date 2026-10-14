@@ -72,8 +72,8 @@ describe('Database Configuration', () => {
     expect(db.Bus.schema.paths.registrationNumber).toBeDefined();
 
     // Route model schema fields
-    expect(db.Route.schema.paths.source).toBeDefined();
-    expect(db.Route.schema.paths.destination).toBeDefined();
+    expect(db.Route.schema.paths.departureLocation).toBeDefined();
+    expect(db.Route.schema.paths.arrivalLocation).toBeDefined();
 
     // Booking model schema fields
     expect(db.Booking.schema.paths.customerId).toBeDefined();

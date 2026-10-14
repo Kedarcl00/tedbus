@@ -303,6 +303,126 @@ exports.createBooking = async (req, res) => {
 };
 
 /**
+ * Cancel a booking
+ * DELETE /api/bookings/:id
+ * Resolves googleId to User._id, verifies ownership, marks cancelled, returns refund info
+ */
+exports.cancelBooking = async (req, res) => {
+  try {
+    const googleId = req.headers['x-user-id'];
+    const { id } = req.params;
+
+    if (!googleId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required', statusCode: 401 }
+      });
+    }
+
+    // Resolve googleId → User ObjectId
+    const User = require('../models/User');
+    const user = await User.findOne({ googleId }).select('_id').lean().exec();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'USER_NOT_FOUND', message: 'User not found', statusCode: 404 }
+      });
+    }
+
+    const booking = await Booking.findById(id).exec();
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'BOOKING_NOT_FOUND', message: 'Booking not found', statusCode: 404 }
+      });
+    }
+
+    // Check ownership
+    if (booking.customerId.toString() !== user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You do not have permission to cancel this booking', statusCode: 403 }
+      });
+    }
+
+    // Prevent cancelling already-terminal bookings
+    if (booking.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'CANNOT_CANCEL', message: 'Cannot cancel a completed booking', statusCode: 400 }
+      });
+    }
+
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'ALREADY_CANCELLED', message: 'This booking is already cancelled', statusCode: 400 }
+      });
+    }
+
+    // Calculate refund based on how far in advance the cancellation is made
+    const fare = booking.fare || 0;
+    let refundAmount = 0;
+    const departureDate = booking.departureDate || booking.journeyDate;
+
+    if (departureDate) {
+      const now = new Date();
+      const departure = new Date(departureDate);
+      const hoursUntilDeparture = (departure - now) / (1000 * 60 * 60);
+
+      if (hoursUntilDeparture >= 24) {
+        refundAmount = fare; // Full refund if > 24 hours before
+      } else if (hoursUntilDeparture >= 12) {
+        refundAmount = Math.round(fare * 0.5); // 50% refund if 12-24 hours before
+      } else {
+        refundAmount = 0; // No refund within 12 hours of departure
+      }
+    } else {
+      refundAmount = Math.round(fare * 0.5); // Default 50% if no departure date
+    }
+
+    // Update booking to cancelled
+    booking.status = 'cancelled';
+    booking.refundAmount = refundAmount;
+    booking.cancelledAt = new Date();
+    await booking.save();
+
+    logger.info('Booking cancelled', { bookingId: id, googleId, refundAmount });
+
+    // Trigger cancellation notification (fire-and-forget)
+    try {
+      await createNotification(
+        user._id,
+        'BOOKING_CANCELLED',
+        'Booking Cancelled',
+        `Your booking has been cancelled. Refund of ₹${refundAmount} will be processed within 5-7 business days.`,
+        ['in-app', 'email'],
+        { bookingId: id, refundAmount }
+      );
+    } catch (notifError) {
+      logger.error('Failed to create cancellation notification', notifError);
+    }
+
+    return res.status(200).json({
+      success: true,
+      bookingId: id,
+      status: 'cancelled',
+      refundAmount,
+      message: `Booking cancelled successfully. Refund of ₹${refundAmount} will be processed within 5-7 business days.`
+    });
+
+  } catch (error) {
+    logger.error('Error cancelling booking', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Failed to cancel booking', statusCode: 500, details: error.message }
+    });
+  }
+};
+
+/**
  * Get booking by ID
  * GET /api/bookings/:id
  * Enforces user ownership

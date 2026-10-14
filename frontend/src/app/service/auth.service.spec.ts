@@ -1,11 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
+import { ThemeService } from './theme.service';
 
 describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [ThemeService]
+    });
     service = TestBed.inject(AuthService);
     // Clear sessionStorage before each test
     sessionStorage.clear();
@@ -318,8 +323,13 @@ describe('AuthService', () => {
       // Store user in sessionStorage
       sessionStorage.setItem('Loggedinuser', JSON.stringify(testUser));
 
-      // Create new service instance (simulating page reload)
-      const newService = new AuthService();
+      // Simulate page reload by resetting and re-injecting the service
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule],
+        providers: [ThemeService]
+      });
+      const newService = TestBed.inject(AuthService);
 
       expect(newService.getCurrentUser()).toEqual(testUser);
       expect(newService.isAuthenticated()).toBe(true);
@@ -329,7 +339,13 @@ describe('AuthService', () => {
       sessionStorage.setItem('Loggedinuser', 'invalid json');
 
       spyOn(console, 'error');
-      const newService = new AuthService();
+      // Simulate page reload by resetting and re-injecting the service
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule],
+        providers: [ThemeService]
+      });
+      const newService = TestBed.inject(AuthService);
 
       expect(console.error).toHaveBeenCalled();
       expect(newService.getCurrentUser()).toBeNull();
@@ -346,7 +362,13 @@ describe('AuthService', () => {
       sessionStorage.setItem('Loggedinuser', JSON.stringify(malformedUser));
 
       spyOn(console, 'warn');
-      const newService = new AuthService();
+      // Simulate page reload by resetting and re-injecting the service
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule],
+        providers: [ThemeService]
+      });
+      const newService = TestBed.inject(AuthService);
 
       expect(console.warn).toHaveBeenCalledWith(
         'Invalid user data in sessionStorage, clearing'

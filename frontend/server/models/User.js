@@ -22,6 +22,18 @@ const userSchema = new Schema(
       type: String,
       required: false,
     },
+    phone: {
+      type: String,
+      required: false,
+    },
+    gender: {
+      type: String,
+      required: false,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: false,
+    },
     preferences: {
       type: Object,
       default: {},

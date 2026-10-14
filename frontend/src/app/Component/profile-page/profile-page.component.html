@@ -53,8 +53,22 @@
         <p class="error-message" style="color: #c62828; margin: 0;">{{ profileError }}</p>
       </div>
 
-      <!-- Profile Data -->
-      <div *ngIf="userProfile && !isLoading" class="profilebox">
+      <!-- Save Success & Error Banners -->
+      <div *ngIf="saveSuccessMessage" class="success-container" style="margin: 0 0 15px 120px; width: 78%; padding: 12px 20px; background-color: #e8f5e9; border: 1px solid #66bb6a; border-radius: 4px; color: #2e7d32;">
+        {{ saveSuccessMessage }}
+      </div>
+      <div *ngIf="saveErrorMessage" class="error-container" style="margin: 0 0 15px 120px; width: 78%; padding: 12px 20px; background-color: #ffebee; border: 1px solid #ef5350; border-radius: 4px; color: #c62828;">
+        {{ saveErrorMessage }}
+      </div>
+
+      <!-- Profile View (when not editing) -->
+      <div *ngIf="userProfile && !isLoading && !isEditing" class="profilebox">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+          <button (click)="startEditing()" style="cursor: pointer; background: #d84e55; color: white; border: none; padding: 7px 18px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <mat-icon style="font-size: 18px; height: 18px; width: 18px;">edit</mat-icon>
+            {{ 'PROFILE.EDIT_PROFILE' | translate }}
+          </button>
+        </div>
         <div style="display: flex; justify-content: space-between">
           <div
             style="display: flex; flex-direction: column; margin-left: 20px; height: 50px; justify-content: space-evenly">
@@ -91,6 +105,61 @@
             <div class="userDetailInfo">{{ userProfile.phone || ('PROFILE.NOT_SET' | translate) }}</div>
           </div>
         </div>
+      </div>
+
+      <!-- Profile Edit Form (when isEditing is true) -->
+      <div *ngIf="userProfile && !isLoading && isEditing" class="profilebox">
+        <form (ngSubmit)="saveProfile()" #editProfileForm="ngForm">
+          <div style="display: flex; gap: 30px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+              <label class="userDetailHeading">{{ 'PROFILE.YOUR_NAME' | translate }} *</label>
+              <input type="text" [(ngModel)]="editForm.name" name="name" required
+                style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" />
+            </div>
+            <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+              <label class="userDetailHeading">{{ 'PROFILE.DATE_OF_BIRTH' | translate }}</label>
+              <input type="date" [(ngModel)]="editForm.dateOfBirth" name="dateOfBirth"
+                style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 30px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+              <label class="userDetailHeading">{{ 'PROFILE.GENDER' | translate }}</label>
+              <select [(ngModel)]="editForm.gender" name="gender"
+                style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+                <option value="">-- {{ 'PROFILE.SELECT_GENDER' | translate }} --</option>
+                <option value="Male">{{ 'PROFILE.MALE' | translate }}</option>
+                <option value="Female">{{ 'PROFILE.FEMALE' | translate }}</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+              <label class="userDetailHeading">{{ 'PROFILE.PHONE' | translate }}</label>
+              <input type="tel" [(ngModel)]="editForm.phone" name="phone" placeholder="+91 9876543210"
+                style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 30px; margin-bottom: 25px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px;">
+              <label class="userDetailHeading">{{ 'PROFILE.EMAIL' | translate }}</label>
+              <input type="text" [value]="userProfile.email" disabled
+                style="padding: 8px 12px; border: 1px solid #eee; background-color: #f5f5f5; border-radius: 4px; font-size: 14px; color: #888;" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" (click)="cancelEditing()" [disabled]="isSaving"
+              style="cursor: pointer; background: #e0e0e0; color: #333; border: none; padding: 8px 20px; border-radius: 4px; font-weight: 600;">
+              {{ 'PROFILE.CANCEL' | translate }}
+            </button>
+            <button type="submit" [disabled]="isSaving || !editForm.name.trim()"
+              style="cursor: pointer; background: #d84e55; color: white; border: none; padding: 8px 24px; border-radius: 4px; font-weight: 600;">
+              {{ (isSaving ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
+            </button>
+          </div>
+        </form>
       </div>
   
     </div>

@@ -121,7 +121,13 @@
     "LOADING": "Loading profile...",
     "WALLET_COMING_SOON": "Wallet feature coming soon...",
     "MALE": "Male",
-    "FEMALE": "Female"
+    "FEMALE": "Female",
+    "EDIT_PROFILE": "Edit Profile",
+    "SAVE": "Save",
+    "CANCEL": "Cancel",
+    "SAVING": "Saving...",
+    "PROFILE_UPDATED": "Profile updated successfully!",
+    "SELECT_GENDER": "Select Gender"
   },
   "MY_TRIPS": {
     "TITLE": "My Bookings",

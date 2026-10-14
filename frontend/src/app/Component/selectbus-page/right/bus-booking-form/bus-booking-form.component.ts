@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DataserviceService } from '../../../../service/dataservice.service';
+import { AuthService } from '../../../../service/auth.service';
 
 @Component({
   selector: 'app-bus-booking-form',
@@ -29,7 +30,11 @@ export class BusBookingFormComponent {
   sendupdates: boolean = false;
   passiscovid: boolean = false;
 
-  constructor(private router: Router, private dataservice: DataserviceService) {}
+  constructor(
+    private router: Router,
+    private dataservice: DataserviceService,
+    private authservice: AuthService,
+  ) {}
 
   handlePassGender(event: Event, index: number): void {
     const target = event.target as HTMLInputElement;
@@ -56,6 +61,11 @@ export class BusBookingFormComponent {
   }
 
   handleproceedtopay(): void {
+    if (!this.authservice.isLoggedIn) {
+      alert('Please sign in to book your bus. Click the "Sign In" button in the top navigation bar to continue.');
+      return;
+    }
+
     const routeParams = {
       operatorname:      this.operatorname,
       selectedseat:      this.selectedseat,

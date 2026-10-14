@@ -84,7 +84,7 @@ class BookingService {
         status: initialStatus,
         paymentMethod: bookingData.paymentMethod || 'online',
         paymentStatus: initialStatus === BOOKING_STATES.CONFIRMED ? 'pending' : 'pending',
-        passengers: bookingData.passengers || [], // Fix: use 'passengers' not 'passengerDetails' to match schema
+        passengers: bookingData.passengers || bookingData.passengerDetails || [], // Fix: support passengerDetails alias
         departureDate: bookingData.departureDate,
       });
 
@@ -333,13 +333,14 @@ class BookingService {
       errors.duration = 'Duration is required';
     }
 
-    // Validate passenger details
-    if (!data.passengers || !Array.isArray(data.passengers)) {
+    // Validate passenger details (accept passengerDetails as alias for backwards compatibility)
+    const passengers = data.passengerDetails !== undefined ? data.passengerDetails : data.passengers;
+    if (!passengers || !Array.isArray(passengers)) {
       errors.passengers = 'Passenger details are required';
-    } else if (data.passengers.length === 0) {
+    } else if (passengers.length === 0) {
       errors.passengers = 'At least one passenger is required';
     } else {
-      const invalidPassenger = data.passengers.some(
+      const invalidPassenger = passengers.some(
         (p) => !p.name || !p.age || !p.gender
       );
       if (invalidPassenger) {

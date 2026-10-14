@@ -158,6 +158,7 @@ describe('BookingService', () => {
         seats: [12, 13, 14],
         fare: 135.97,
         paymentMethod: 'online',
+        departureDate: '2024-12-20',
         phoneNumber: '555-1234',
         departureDetails: { city: 'NYC', location: 'Times Square', time: '08:00' },
         arrivalDetails: { city: 'Boston', location: 'Downtown', time: '14:30' },
@@ -169,6 +170,7 @@ describe('BookingService', () => {
       };
 
       const mockResponse: BookingResponse = {
+        _id: 'BOOKING_001',
         id: 'BOOKING_001',
         customerId: 'USER_123',
         busId: 'BUS001',
@@ -209,6 +211,7 @@ describe('BookingService', () => {
         seats: [12, 13],
         fare: 95.98,
         paymentMethod: 'cash_on_trip',
+        departureDate: '2024-12-20',
         phoneNumber: '555-1234',
         departureDetails: { city: 'NYC', location: 'Times Square', time: '08:00' },
         arrivalDetails: { city: 'Boston', location: 'Downtown', time: '14:30' },
@@ -219,6 +222,7 @@ describe('BookingService', () => {
       };
 
       const mockResponse: BookingResponse = {
+        _id: 'BOOKING_002',
         id: 'BOOKING_002',
         customerId: 'USER_123',
         busId: 'BUS001',
@@ -257,6 +261,7 @@ describe('BookingService', () => {
         seats: [12, 13],
         fare: 95.98,
         paymentMethod: 'cash_on_trip',
+        departureDate: '2024-12-20',
         phoneNumber: '555-1234',
         departureDetails: { city: 'NYC', location: 'Times Square', time: '08:00' },
         arrivalDetails: { city: 'Boston', location: 'Downtown', time: '14:30' },
@@ -288,6 +293,7 @@ describe('BookingService', () => {
         seats: [1, 2, 3, 4, 5],
         fare: 200,
         paymentMethod: 'online',
+        departureDate: '2024-12-20',
         phoneNumber: '555-1234',
         departureDetails: { city: 'NYC', location: 'Times Square', time: '08:00' },
         arrivalDetails: { city: 'Boston', location: 'Downtown', time: '14:30' },
@@ -317,6 +323,7 @@ describe('BookingService', () => {
     it('should retrieve user bookings', () => {
       const mockBookings: BookingResponse[] = [
         {
+          _id: 'BOOKING_001',
           id: 'BOOKING_001',
           customerId: 'USER_123',
           busId: 'BUS001',
@@ -334,6 +341,7 @@ describe('BookingService', () => {
           bookingDate: '2024-06-15'
         },
         {
+          _id: 'BOOKING_002',
           id: 'BOOKING_002',
           customerId: 'USER_123',
           busId: 'BUS002',
@@ -392,6 +400,7 @@ describe('BookingService', () => {
     it('should retrieve booking details with valid bookingId', () => {
       const bookingId = 'BOOKING_001';
       const mockBooking: BookingResponse = {
+        _id: 'BOOKING_001',
         id: 'BOOKING_001',
         customerId: 'USER_123',
         busId: 'BUS001',
@@ -597,6 +606,7 @@ describe('BookingService', () => {
         seats: [12, 13],
         fare: 95.98,
         paymentMethod: 'cash_on_trip',
+        departureDate: '2024-12-20',
         phoneNumber: '555-1234',
         departureDetails: { city: 'NYC', location: 'Times Square', time: '08:00' },
         arrivalDetails: { city: 'Boston', location: 'Downtown', time: '14:30' },
