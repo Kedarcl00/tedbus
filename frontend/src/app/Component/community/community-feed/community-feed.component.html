@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <!-- Filter and Search -->
+  <!-- Filter and Search Bar -->
   <div class="filter-search-bar" *ngIf="posts.length > 0">
     <select class="form-select" [(ngModel)]="filterTag" (ngModelChange)="onFilterChange()">
       <option value="">{{ 'COMMUNITY.FILTER_BY_TAG' | translate }}</option>
@@ -18,6 +18,16 @@
     <input class="form-input" type="search" [(ngModel)]="searchQuery" 
            (ngModelChange)="onSearchChange()"
            [placeholder]="'COMMUNITY.SEARCH_POSTS' | translate" />
+    
+    <!-- Sort Toggle -->
+    <div class="sort-tabs">
+      <button class="sort-tab" [class.active]="sortBy === 'recent'" (click)="setSortBy('recent')">
+        Recent
+      </button>
+      <button class="sort-tab" [class.active]="sortBy === 'popular'" (click)="setSortBy('popular')">
+        🔥 Popular
+      </button>
+    </div>
   </div>
 
   <!-- Error banner -->
@@ -34,7 +44,7 @@
     <input class="form-input" [(ngModel)]="newImageUrl"
            [placeholder]="'COMMUNITY.POST_IMAGE' | translate" />
     <select class="form-select" [(ngModel)]="selectedTopicId">
-      <option value="">— No topic —</option>
+      <option value="">— Select a Topic (Optional) —</option>
       <option *ngFor="let t of topics" [value]="t._id">{{ t.title }}</option>
     </select>
     <div class="form-actions">
@@ -64,21 +74,10 @@
       <app-post-card
         [post]="post"
         (like)="onLike($event)"
-        (comment)="onComment($event)"
-        (share)="onShare($event)"
         (report)="onReport($event)"
-        (edit)="onEdit($event)"
         (delete)="onDelete($event)"
         (postUpdated)="onPostUpdated($event)">
       </app-post-card>
-
-      <!-- Inline comment form -->
-      <div class="comment-form" *ngIf="activeCommentPostId === post._id">
-        <textarea class="form-textarea" [(ngModel)]="commentBody" rows="2"
-                  [placeholder]="'COMMUNITY.ADD_COMMENT' | translate"></textarea>
-        <button class="btn-primary" (click)="submitComment(post._id)">Post</button>
-        <button class="btn-secondary" (click)="activeCommentPostId = null">Cancel</button>
-      </div>
     </div>
   </ng-container>
 

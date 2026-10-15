@@ -1,11 +1,13 @@
 <div>
-    <app-sorting-bar></app-sorting-bar>
+    <app-sorting-bar (sortChange)="onSortChange($event)"></app-sorting-bar>
     <div *ngFor="let bus of matchedbus; index as i">
         <div *ngFor="let key of getkeys()">
             <div *ngIf="bus._id === key">
                 <app-bus-box
                     [rating]="bus.rating"
                     [busid]="bus._id"
+                    [busRating]="bus.avgRating"
+                    [busTotalReviews]="bus.totalReviews"
                     [operatorname]="bus.operatorName"
                     [bustype]="bus.busType"
                     [departuretime]="bus.departureTime"

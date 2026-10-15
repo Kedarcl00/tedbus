@@ -26,10 +26,16 @@ export interface ForumTopic {
 export class CommunityService {
   constructor(private http: HttpClient) {}
 
-  getPosts(forumTopicId?: string, page = 1): Observable<{ posts: Post[]; total: number }> {
+  getPosts(forumTopicId?: string, page = 1, authorId?: string, sortBy?: string): Observable<{ posts: Post[]; total: number }> {
     const params: any = { page };
     if (forumTopicId) params.forumTopicId = forumTopicId;
+    if (authorId) params.authorId = authorId;
+    if (sortBy) params.sortBy = sortBy;
     return this.http.get<any>(`${BASE}/posts`, { params });
+  }
+
+  getUserPosts(authorId: string, page = 1): Observable<{ posts: Post[]; total: number }> {
+    return this.getPosts(undefined, page, authorId);
   }
 
   createPost(payload: any): Observable<Post> {
@@ -62,6 +68,10 @@ export class CommunityService {
 
   createComment(payload: any): Observable<Comment> {
     return this.http.post<Comment>(`${BASE}/comments`, payload);
+  }
+
+  reportComment(commentId: string, userId: string): Observable<{ reports: number; hidden: boolean }> {
+    return this.http.post<{ reports: number; hidden: boolean }>(`${BASE}/comments/${commentId}/report`, { userId });
   }
 
   getTopics(): Observable<ForumTopic[]> {

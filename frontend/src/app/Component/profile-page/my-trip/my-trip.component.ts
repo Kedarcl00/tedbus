@@ -4,39 +4,23 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { BookingService, BookingResponse } from '../../../service/booking.service';
+import { ReviewService, Review } from '../../../service/review.service';
+import { ReviewFormComponent } from '../../review/review-form.component';
 
-/**
- * MyTripComponent - Display user's bookings with payment method and cancellation
- *
- * Responsibilities:
- * - Fetch user's bookings from BookingService.getMyBookings()
- * - Display payment method: "Online" or "Cash on Trip"
- * - Display payment status if applicable
- * - Show booking status with color-coded badges
- * - Add cancel booking button with confirmation
- * - Handle cancellation with refund information
- *
- * Data Flow:
- * 1. Component loads
- * 2. Calls BookingService.getMyBookings() to fetch user's bookings
- * 3. Server-side filtering ensures only user's bookings are returned
- * 4. Displays bookings with payment/status information
- * 5. On cancel click, shows confirmation dialog
- * 6. On confirm, calls BookingService.cancelBooking()
- * 7. Shows refund amount and refreshes booking list
- *
- * Requirements: 5.1, 6.1
- */
 @Component({
   selector: 'app-my-trip',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatDialogModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatDialogModule, ReviewFormComponent],
   templateUrl: './my-trip.component.html',
   styleUrl: './my-trip.component.css',
 })
 export class MyTripComponent implements OnInit {
   // Bookings loaded from API
   bookings: BookingResponse[] = [];
+  
+  // Review integration state
+  activeReviewBookingId: string | null = null;
+  bookingReviews: Map<string, Review | null> = new Map();
   
   // Classified bookings
   currentBookings: BookingResponse[] = [];
@@ -74,11 +58,69 @@ export class MyTripComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
     this.loadBookings();
+  }
+
+  getBookingId(booking: BookingResponse): string {
+    if (!booking) return '';
+    return (booking._id || booking.id || '') as string;
+  }
+
+  getBusId(booking: BookingResponse): string {
+    if (!booking) return '';
+    if (typeof booking.busId === 'object' && booking.busId !== null) {
+      return (booking.busId as any)._id || (booking.busId as any).id || '';
+    }
+    return String(booking.busId || '');
+  }
+
+  getRouteId(booking: BookingResponse): string {
+    if (!booking) return '';
+    if (typeof booking.routeId === 'object' && booking.routeId !== null) {
+      return (booking.routeId as any)._id || (booking.routeId as any).id || '';
+    }
+    return String(booking.routeId || '');
+  }
+
+  toggleReview(booking: BookingResponse): void {
+    const bookingId = this.getBookingId(booking);
+    if (!bookingId) return;
+    if (this.activeReviewBookingId === bookingId) {
+      this.activeReviewBookingId = null;
+    } else {
+      this.activeReviewBookingId = bookingId;
+      if (!this.bookingReviews.has(bookingId)) {
+        this.reviewService.getBookingReview(bookingId).subscribe({
+          next: (res) => {
+            this.bookingReviews.set(bookingId, res.review);
+          },
+          error: () => {
+            this.bookingReviews.set(bookingId, null);
+          }
+        });
+      }
+    }
+  }
+
+  onReviewSubmitted(bookingId: string): void {
+    this.reviewService.getBookingReview(bookingId).subscribe({
+      next: (res) => {
+        this.bookingReviews.set(bookingId, res.review);
+      }
+    });
+  }
+
+  onReviewEdited(bookingId: string): void {
+    this.reviewService.getBookingReview(bookingId).subscribe({
+      next: (res) => {
+        this.bookingReviews.set(bookingId, res.review);
+      }
+    });
   }
 
   /**

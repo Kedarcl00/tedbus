@@ -180,6 +180,43 @@
   text-align: center;
 }
 
+.btn-review-trip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #d84e55;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(216, 78, 85, 0.25);
+}
+
+.btn-review-trip:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(216, 78, 85, 0.35);
+}
+
+.btn-review-trip.active {
+  background-color: #555;
+}
+
+.btn-review-trip .material-icons {
+  font-size: 18px;
+}
+
+.trip-review-wrapper {
+  width: 100%;
+  margin-top: 15px;
+  border-top: 1px dashed var(--color-border, #e0e0e0);
+  padding-top: 15px;
+}
+
 .loading-container,
 .error-container,
 .empty-container {

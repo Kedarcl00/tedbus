@@ -106,3 +106,9 @@
     align-items: center;
     cursor: pointer;
   }
+
+  .main-container > div.active {
+    color: #d84e55 !important;
+    font-weight: 700 !important;
+    text-decoration: underline;
+  }

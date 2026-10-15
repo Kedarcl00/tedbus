@@ -1,6 +1,35 @@
-<div class="review-item">
-  <!-- Header: Rating and Date -->
-  <div class="review-header">
+<div class="review-item" [class.trusted-border]="review.isTrustedReviewer">
+  <!-- Top User Profile Row -->
+  <div class="reviewer-meta">
+    <div class="avatar-wrap">
+      <img *ngIf="review.userPicture" [src]="review.userPicture" alt="Avatar" class="avatar-img" />
+      <div *ngIf="!review.userPicture" class="avatar-fallback">
+        {{ (review.userName || 'T').charAt(0).toUpperCase() }}
+      </div>
+    </div>
+    <div class="reviewer-info">
+      <div class="name-badges-row">
+        <span class="reviewer-name">{{ review.userName || 'Verified Traveller' }}</span>
+        
+        <!-- Verified Traveller Badge -->
+        <span class="badge verified-badge" *ngIf="review.isVerifiedUser !== false">
+          <mat-icon class="badge-icon">verified</mat-icon> Verified Traveller
+        </span>
+
+        <!-- Trusted Reviewer Badge (highlighted based on upvotes) -->
+        <span class="badge trusted-badge" *ngIf="review.isTrustedReviewer">
+          <mat-icon class="badge-icon">stars</mat-icon> Trusted Reviewer
+        </span>
+      </div>
+      <div class="review-date">
+        {{ review.createdAt | date:'MMM d, yyyy · h:mm a' }}
+        <span class="edited-badge" *ngIf="review.editedAt">(edited)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Stars -->
+  <div class="rating-row">
     <div class="rating-stars">
       <mat-icon
         *ngFor="let star of getRatingStars()"
@@ -9,10 +38,7 @@
         {{ star <= review.rating ? 'star' : 'star_border' }}
       </mat-icon>
     </div>
-    <div class="review-date">
-      {{ review.createdAt | date:'MMM d, yyyy' }}
-      <span class="edited-badge" *ngIf="review.editedAt">(edited)</span>
-    </div>
+    <span class="rating-number">{{ review.rating }}.0</span>
   </div>
 
   <!-- Review Text -->
@@ -20,25 +46,33 @@
     {{ review.reviewText }}
   </div>
 
+  <!-- Locked Edit Window Notice (if owner but past 24h) -->
+  <div class="lock-notice" *ngIf="isOwner && !canEdit">
+    <mat-icon class="lock-icon">lock</mat-icon>
+    <span>Rating & review locked (24-hour edit window has closed)</span>
+  </div>
+
   <!-- Actions -->
   <div class="review-actions">
-    <!-- Helpful Button -->
+    <!-- Helpful (Upvote) Button -->
     <button
-      class="action-button"
+      class="action-button helpful-btn"
       [class.active]="hasMarkedHelpful"
       (click)="onHelpfulClick()"
       [disabled]="!currentUserId || hasMarkedHelpful"
+      title="Mark as helpful review"
     >
       <mat-icon>thumb_up</mat-icon>
-      <span>Helpful ({{ review.helpful.length }})</span>
+      <span>Helpful ({{ (review.helpful || []).length }})</span>
     </button>
 
     <!-- Report Button -->
     <button
-      class="action-button"
+      class="action-button report-btn"
       [class.reported]="hasReported"
       (click)="onReportClick()"
       [disabled]="!currentUserId || hasReported"
+      title="Report inappropriate content"
     >
       <mat-icon>flag</mat-icon>
       <span>{{ hasReported ? 'Reported' : 'Report' }}</span>
@@ -49,9 +83,10 @@
       class="action-button edit-button"
       *ngIf="canEdit"
       (click)="onEditClick()"
+      title="Edit review within 24h"
     >
       <mat-icon>edit</mat-icon>
-      <span>Edit</span>
+      <span>Edit ({{ hoursLeftToEdit }}h left)</span>
     </button>
 
     <!-- Delete Button (owner within 24h or moderator) -->

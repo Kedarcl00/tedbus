@@ -1,12 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-sorting-bar',
   standalone: true,
-  imports: [MatIconModule, MatDividerModule],
+  imports: [CommonModule, MatIconModule, MatDividerModule],
   templateUrl: './sorting-bar.component.html',
   styleUrl: './sorting-bar.component.css',
 })
-export class SortingBarComponent {}
+export class SortingBarComponent {
+  @Output() sortChange = new EventEmitter<string>();
+  activeSort: string = '';
+
+  handleSort(type: string): void {
+    this.activeSort = type;
+    this.sortChange.emit(type);
+  }
+}

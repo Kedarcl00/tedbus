@@ -1,217 +1,262 @@
-<div class="route-planner-container">
-  <div class="route-planner-header">
-    <h1>Interactive Route Planner</h1>
-    <p>Plan your journey with multiple stops and waypoints</p>
+<div class="rp-container">
+
+  <!-- ── Header ── -->
+  <div class="rp-header">
+    <h1>🗺️ Interactive Route Planner</h1>
+    <p>Plan your bus journey, compare routes, and track real-time traffic</p>
   </div>
 
-  <!-- Messages -->
-  <div *ngIf="errorMessage" class="message error-message">
-    {{ errorMessage }}
-  </div>
-  <div *ngIf="successMessage" class="message success-message">
-    {{ successMessage }}
+  <!-- ── Messages ── -->
+  <div *ngIf="errorMessage"   class="alert alert-error">⚠️ {{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">✓ {{ successMessage }}</div>
+
+  <!-- ── Traffic Banner (when route is calculated) ── -->
+  <div *ngIf="trafficUpdate || (calculatedRoute && calculatedRoute.trafficDelay !== '0 min')"
+       class="traffic-banner" [ngClass]="congestionClass(trafficUpdate?.congestionLevel || calculatedRoute?.congestionLevel)">
+    <mat-icon>{{ congestionIcon(trafficUpdate?.congestionLevel || calculatedRoute?.congestionLevel) }}</mat-icon>
+    <span>
+      <strong>Live Traffic:</strong>
+      {{ trafficUpdate?.trafficMessage || calculatedRoute?.trafficMessage }}
+      <span *ngIf="(trafficUpdate?.trafficDelay || calculatedRoute?.trafficDelay) as delay" class="delay-chip">
+        {{ delay }}
+      </span>
+    </span>
+    <button class="refresh-btn" (click)="refreshTraffic()" [disabled]="isLoadingTraffic" title="Refresh traffic">
+      <mat-icon [class.spinning]="isLoadingTraffic">refresh</mat-icon>
+    </button>
+    <span *ngIf="lastTrafficRefresh" class="updated-at">
+      Updated {{ lastTrafficRefresh | date:'h:mm:ss a' }}
+    </span>
   </div>
 
-  <div class="route-planner-content">
-    <!-- Route Input Section -->
-    <div class="route-input-section">
-      <h2>Plan Your Route</h2>
-      
-      <div class="input-group">
-        <label for="origin">Origin</label>
-        <input
-          type="text"
-          id="origin"
-          [(ngModel)]="origin"
-          list="cities-list"
-          placeholder="Enter starting location"
-          class="route-input"
-        />
-      </div>
+  <!-- ── Main Layout ── -->
+  <div class="rp-layout">
 
-      <!-- Waypoints -->
-      <div class="waypoints-section" *ngIf="waypoints.length > 0">
-        <div *ngFor="let waypoint of waypoints; let i = index" class="waypoint-item">
-          <label>Waypoint {{ i + 1 }}</label>
-          <div class="waypoint-controls">
-            <input
-              type="text"
-              [(ngModel)]="waypoint.address"
-              list="cities-list"
-              placeholder="Enter stop location"
-              class="route-input"
-            />
-            <div class="waypoint-buttons">
-              <button
-                type="button"
-                (click)="moveWaypointUp(i)"
-                [disabled]="i === 0"
-                class="btn-icon"
-                title="Move up"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                (click)="moveWaypointDown(i)"
-                [disabled]="i === waypoints.length - 1"
-                class="btn-icon"
-                title="Move down"
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                (click)="removeWaypoint(i)"
-                class="btn-icon btn-danger"
-                title="Remove"
-              >
-                ✕
-              </button>
+    <!-- ─ Left Panel: Inputs ─ -->
+    <div class="rp-sidebar">
+
+      <!-- Route Form -->
+      <div class="card">
+        <h2>Plan Your Route</h2>
+
+        <!-- Origin -->
+        <div class="input-group autocomplete-wrap">
+          <label>
+            <span class="dot dot-green"></span> Origin
+          </label>
+          <input class="route-input" type="text" [(ngModel)]="origin"
+                 placeholder="e.g. Mumbai"
+                 (input)="onOriginInput()" (blur)="closeDropdowns()" />
+          <ul class="autocomplete-list" *ngIf="showOriginDrop">
+            <li *ngFor="let c of filteredOrigin" (mousedown)="selectOriginCity(c)">{{ c }}</li>
+          </ul>
+        </div>
+
+        <!-- Waypoints -->
+        <div class="waypoints-section" *ngIf="waypoints.length > 0">
+          <div *ngFor="let wp of waypoints; let i = index" class="waypoint-row">
+            <div class="waypoint-label">
+              <span class="dot dot-blue"></span> Stop {{ i + 1 }}
+            </div>
+            <div class="wp-controls">
+              <div class="autocomplete-wrap" style="flex:1">
+                <input class="route-input" type="text" [(ngModel)]="wp.address"
+                       [placeholder]="'e.g. Pune'"
+                       (input)="onWpInput(i)" (blur)="closeDropdowns()" />
+                <ul class="autocomplete-list" *ngIf="showWpDrop[i]">
+                  <li *ngFor="let c of filteredWp[i]" (mousedown)="selectWpCity(i, c)">{{ c }}</li>
+                </ul>
+              </div>
+              <div class="wp-btns">
+                <button class="icon-btn" (click)="moveWaypointUp(i)"   [disabled]="i === 0"                 title="Move up">↑</button>
+                <button class="icon-btn" (click)="moveWaypointDown(i)" [disabled]="i === waypoints.length-1" title="Move down">↓</button>
+                <button class="icon-btn danger" (click)="removeWaypoint(i)" title="Remove">✕</button>
+              </div>
             </div>
           </div>
         </div>
+
+        <button class="btn-add-stop" (click)="addWaypoint()">
+          <mat-icon>add_location_alt</mat-icon> Add Stop
+        </button>
+
+        <!-- Destination -->
+        <div class="input-group autocomplete-wrap" style="margin-top:12px">
+          <label>
+            <span class="dot dot-red"></span> Destination
+          </label>
+          <input class="route-input" type="text" [(ngModel)]="destination"
+                 placeholder="e.g. Goa"
+                 (input)="onDestInput()" (blur)="closeDropdowns()" />
+          <ul class="autocomplete-list" *ngIf="showDestDrop">
+            <li *ngFor="let c of filteredDest" (mousedown)="selectDestCity(c)">{{ c }}</li>
+          </ul>
+        </div>
+
+        <button class="btn-primary" (click)="calculateRoute()"
+                [disabled]="isCalculating || !origin || !destination">
+          <mat-spinner *ngIf="isCalculating" diameter="18" style="display:inline-block"></mat-spinner>
+          {{ isCalculating ? 'Calculating…' : '⚡ Calculate Route' }}
+        </button>
       </div>
 
-      <button type="button" (click)="addWaypoint()" class="btn-secondary">
-        + Add Waypoint
-      </button>
+      <!-- Route Results -->
+      <div *ngIf="calculatedRoute" class="card">
+        <h2>📊 Route Summary</h2>
 
-      <div class="input-group">
-        <label for="destination">Destination</label>
-        <input
-          type="text"
-          id="destination"
-          [(ngModel)]="destination"
-          list="cities-list"
-          placeholder="Enter destination location"
-          class="route-input"
-        />
-      </div>
-
-      <!-- City autocomplete datalist -->
-      <datalist id="cities-list">
-        <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
-      </datalist>
-
-      <button
-        type="button"
-        (click)="calculateRoute()"
-        [disabled]="isCalculating || !origin || !destination"
-        class="btn-primary"
-      >
-        {{ isCalculating ? 'Calculating...' : 'Calculate Route' }}
-      </button>
-
-      <!-- Calculated Route Details -->
-      <div *ngIf="calculatedRoute" class="route-details">
-        <h3>Route Details</h3>
-        <div class="detail-item">
-          <strong>Distance:</strong> {{ calculatedRoute.distance }}
-        </div>
-        <div class="detail-item">
-          <strong>Duration:</strong> {{ calculatedRoute.duration }}
-        </div>
-        <div *ngIf="calculatedRoute.alternatives && calculatedRoute.alternatives.length > 0" class="alternatives">
-          <h4>Alternative Routes</h4>
-          <div *ngFor="let alt of calculatedRoute.alternatives; let i = index" class="alternative-item">
-            <strong>Route {{ i + 1 }}:</strong> {{ alt.distance }} - {{ alt.duration }}
+        <!-- Stats grid -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <mat-icon>straighten</mat-icon>
+            <div class="stat-val">{{ calculatedRoute.distance }}</div>
+            <div class="stat-lbl">Distance</div>
+          </div>
+          <div class="stat-box">
+            <mat-icon>schedule</mat-icon>
+            <div class="stat-val">{{ calculatedRoute.duration }}</div>
+            <div class="stat-lbl">Est. Time</div>
+          </div>
+          <div class="stat-box">
+            <mat-icon>speed</mat-icon>
+            <div class="stat-val">{{ calculatedRoute.routeStats.speedKmph }} km/h</div>
+            <div class="stat-lbl">Avg Speed</div>
+          </div>
+          <div class="stat-box" [ngClass]="congestionClass(calculatedRoute.congestionLevel)">
+            <mat-icon>{{ congestionIcon(calculatedRoute.congestionLevel) }}</mat-icon>
+            <div class="stat-val">{{ calculatedRoute.trafficDelay }}</div>
+            <div class="stat-lbl">Traffic</div>
           </div>
         </div>
 
-        <!-- Save Route Section (only for authenticated users) -->
-        <div *ngIf="isAuthenticated" class="save-route-section">
-          <h4>Save This Route</h4>
+        <!-- Alternative routes comparison -->
+        <div *ngIf="calculatedRoute && calculatedRoute.alternatives && calculatedRoute.alternatives.length > 0" class="alternatives-section">
+          <div class="alt-header">
+            <h3>Route Options</h3>
+            <div class="compare-tabs">
+              <button [class.active]="compareKey==='time'"     (click)="compareKey='time'">By Time</button>
+              <button [class.active]="compareKey==='distance'" (click)="compareKey='distance'">By Distance</button>
+              <button [class.active]="compareKey==='traffic'"  (click)="compareKey='traffic'">By Traffic</button>
+            </div>
+          </div>
+
+          <div *ngFor="let alt of sortedAlternatives()" class="alt-card"
+               [class.alt-selected]="altIndexOf(alt) === selectedAltIndex"
+               (click)="selectAlternative(altIndexOf(alt))">
+            <div class="alt-row-top">
+              <span class="alt-label">{{ alt.label }}</span>
+              <span class="alt-badge" [ngClass]="congestionClass(alt.congestionLevel)">
+                {{ alt.congestionLevel }}
+              </span>
+            </div>
+            <div class="alt-row-bottom">
+              <span><mat-icon style="font-size:14px;vertical-align:middle">straighten</mat-icon> {{ alt.distance }}</span>
+              <span><mat-icon style="font-size:14px;vertical-align:middle">schedule</mat-icon> {{ alt.duration }}</span>
+              <span class="delay-chip small" *ngIf="alt.trafficDelay !== '0 min'">{{ alt.trafficDelay }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save route section -->
+        <div *ngIf="isAuthenticated" class="save-section">
+          <h3>💾 Save This Route</h3>
           <div class="input-group">
-            <label for="routeName">Route Name</label>
-            <input
-              type="text"
-              id="routeName"
-              [(ngModel)]="routeName"
-              placeholder="e.g., Daily Commute"
-              class="route-input"
-            />
+            <input class="route-input" type="text" [(ngModel)]="routeName"
+                   placeholder="e.g. Weekend Trip to Goa" />
           </div>
-          <button
-            type="button"
-            (click)="saveRoute()"
-            [disabled]="isSaving || !routeName"
-            class="btn-primary"
-          >
-            {{ isSaving ? 'Saving...' : 'Save Route' }}
+          <button class="btn-primary" (click)="saveRoute()" [disabled]="isSaving || !routeName">
+            {{ isSaving ? 'Saving…' : 'Save Route' }}
           </button>
         </div>
+        <div *ngIf="!isAuthenticated" class="sign-in-hint">
+          🔐 Sign in to save routes for quick access
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─ Right Panel: Map ─ -->
+    <div class="rp-map-panel">
+      <div id="route-map" class="map-container">
+        <div *ngIf="!leafletLoaded" class="map-loading">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Loading map…</p>
+        </div>
+        <div *ngIf="leafletLoaded && !calculatedRoute" class="map-hint">
+          <mat-icon style="font-size:56px;opacity:.3">map</mat-icon>
+          <p>Enter origin and destination above, then click <strong>Calculate Route</strong> to see it on the map</p>
+        </div>
+      </div>
+
+      <!-- Map Legend -->
+      <div *ngIf="calculatedRoute" class="map-legend">
+        <span class="legend-item"><span class="dot dot-green"></span> Origin</span>
+        <span class="legend-item"><span class="dot dot-blue"></span> Waypoint</span>
+        <span class="legend-item"><span class="dot dot-red"></span> Destination</span>
+        <span class="legend-sep"></span>
+        <span class="legend-item traffic-low-txt">● Low traffic</span>
+        <span class="legend-item traffic-moderate-txt">● Moderate</span>
+        <span class="legend-item traffic-high-txt">● Heavy</span>
       </div>
     </div>
 
-    <!-- Map Placeholder Section -->
-    <div class="map-section">
-      <div class="map-placeholder">
-        <div class="map-info">
-          <h3>📍 Map Display</h3>
-          <p>
-            Map display requires a Google Maps or Mapbox API key.
-          </p>
-          <p class="map-note">
-            Set <code>GOOGLE_MAPS_API_KEY</code> or <code>MAPBOX_API_KEY</code> in your .env file to enable interactive maps.
-          </p>
+  </div>
+
+  <!-- ── Saved Routes ── -->
+  <div *ngIf="isAuthenticated" class="card saved-section">
+    <div class="saved-header">
+      <h2>📌 My Saved Routes</h2>
+      <div class="sort-tabs">
+        <button [class.active]="savedRouteSort==='recent'"   (click)="savedRouteSort='recent';   loadSavedRoutes()">Recent</button>
+        <button [class.active]="savedRouteSort==='frequent'" (click)="savedRouteSort='frequent'; loadSavedRoutes()">Most Used</button>
+        <button [class.active]="savedRouteSort==='name'"     (click)="savedRouteSort='name';     loadSavedRoutes()">A–Z</button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingSavedRoutes" style="text-align:center;padding:32px">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoadingSavedRoutes && savedRoutes.length === 0" class="empty-state">
+      <mat-icon>route</mat-icon>
+      <p>No saved routes yet. Calculate a route and save it for quick access!</p>
+    </div>
+
+    <div class="saved-grid" *ngIf="!isLoadingSavedRoutes && savedRoutes.length > 0">
+      <div *ngFor="let r of savedRoutes" class="saved-card">
+        <div class="saved-card-header">
+          <div>
+            <h3>{{ r.name }}</h3>
+            <span class="saved-meta">Used {{ r.useCount || 0 }}×  ·  {{ r.createdAt | date:'d MMM y' }}</span>
+          </div>
+          <div class="saved-actions">
+            <button class="btn-sm btn-load" (click)="loadSavedRoute(r)" title="Load">
+              <mat-icon>play_arrow</mat-icon> Load
+            </button>
+            <button class="btn-sm btn-delete" (click)="deleteRoute(r._id)" title="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="saved-card-body">
+          <div class="route-stops">
+            <span class="stop-badge green">{{ r.origin.address }}</span>
+            <span *ngFor="let w of r.waypoints" class="stop-badge blue">{{ w.address }}</span>
+            <span class="stop-badge red">{{ r.destination.address }}</span>
+          </div>
+          <div class="saved-stats">
+            <span><mat-icon>straighten</mat-icon> {{ r.distance }}</span>
+            <span><mat-icon>schedule</mat-icon> {{ r.duration }}</span>
+            <span *ngIf="r.congestionLevel" [ngClass]="congestionClass(r.congestionLevel)" class="traffic-chip">
+              <mat-icon>{{ congestionIcon(r.congestionLevel) }}</mat-icon> {{ r.congestionLevel }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Saved Routes Section (only for authenticated users) -->
-  <div *ngIf="isAuthenticated" class="saved-routes-section">
-    <h2>My Saved Routes</h2>
-    
-    <div *ngIf="isLoadingSavedRoutes" class="loading-message">
-      Loading saved routes...
-    </div>
-
-    <div *ngIf="!isLoadingSavedRoutes && savedRoutes.length === 0" class="empty-message">
-      No saved routes yet. Calculate and save a route to see it here.
-    </div>
-
-    <div *ngIf="!isLoadingSavedRoutes && savedRoutes.length > 0" class="saved-routes-list">
-      <div *ngFor="let route of savedRoutes" class="saved-route-item">
-        <div class="saved-route-header">
-          <h3>{{ route.name }}</h3>
-          <div class="saved-route-actions">
-            <button
-              type="button"
-              (click)="loadSavedRoute(route)"
-              class="btn-secondary btn-small"
-            >
-              Load
-            </button>
-            <button
-              type="button"
-              (click)="deleteRoute(route._id)"
-              class="btn-danger btn-small"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-        <div class="saved-route-details">
-          <p><strong>From:</strong> {{ route.origin.address }}</p>
-          <p *ngIf="route.waypoints && route.waypoints.length > 0">
-            <strong>Via:</strong> {{ getWaypointsDisplay(route.waypoints) }}
-          </p>
-          <p><strong>To:</strong> {{ route.destination.address }}</p>
-          <div class="saved-route-meta">
-            <span>{{ route.distance }}</span> • <span>{{ route.duration }}</span>
-          </div>
-          <p class="saved-route-date">
-            Saved on {{ route.createdAt | date: 'medium' }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sign-in prompt for unauthenticated users -->
   <div *ngIf="!isAuthenticated" class="auth-prompt">
-    <p>📝 Sign in to save and manage your routes</p>
+    🔐 <a routerLink="/auth">Sign in</a> to save and manage your favourite routes
   </div>
+
 </div>

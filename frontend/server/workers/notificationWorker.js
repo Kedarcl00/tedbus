@@ -62,6 +62,18 @@ async function sendPush(notification) {
 async function dispatch(notification) {
   const maxRetries = notification.maxRetries ?? 3;
 
+  // In-app notifications do not require network transport
+  if (notification.channel === 'in-app') {
+    await Notification.findByIdAndUpdate(notification._id, {
+      status:      'delivered',
+      delivered:   true,
+      deliveredAt: new Date(),
+      retryCount:  0,
+      failureReason: null,
+    });
+    return { success: true, attempts: 1 };
+  }
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (notification.channel === 'email') {
@@ -71,19 +83,25 @@ async function dispatch(notification) {
       }
       // Mark delivered
       await Notification.findByIdAndUpdate(notification._id, {
-        delivered:   true,
-        deliveredAt: new Date(),
-        retryCount:  attempt,
+        status:        'delivered',
+        delivered:     true,
+        deliveredAt:   new Date(),
+        retryCount:    attempt,
+        failureReason: null,
       });
       return { success: true, attempts: attempt + 1 };
     } catch (err) {
       console.error(`Notification attempt ${attempt + 1} failed:`, err.message);
       if (attempt < maxRetries) {
-        // Exponential backoff: 1s, 2s, 4s
-        await delay(1000 * Math.pow(2, attempt));
+        // Exponential backoff: 1s, 2s, 4s (faster in test)
+        const baseDelay = process.env.NODE_ENV === 'test' ? 10 : 1000;
+        await delay(baseDelay * Math.pow(2, attempt));
       } else {
         await Notification.findByIdAndUpdate(notification._id, {
-          retryCount: attempt + 1,
+          status:        'failed',
+          delivered:     false,
+          retryCount:    attempt + 1,
+          failureReason: err.message,
         });
         return { success: false, attempts: attempt + 1, error: err.message };
       }
@@ -91,4 +109,15 @@ async function dispatch(notification) {
   }
 }
 
-module.exports = { dispatch };
+async function retryDispatch(notificationId) {
+  const notification = await Notification.findById(notificationId);
+  if (!notification) throw new Error('Notification not found');
+  await Notification.findByIdAndUpdate(notificationId, {
+    status: 'pending',
+    failureReason: null,
+  });
+  return dispatch(notification);
+}
+
+module.exports = { dispatch, retryDispatch };
+

@@ -9,6 +9,8 @@ import { AuthService } from '../../service/auth.service';
 import { CustomerService, UserProfile } from '../../service/customer.service';
 import { Booking } from '../../model/booking.model';
 import { MyTripComponent } from './my-trip/my-trip.component';
+import { PostCardComponent } from '../community/post-card/post-card.component';
+import { CommunityService, Post } from '../../service/community.service';
 
 /**
  * ProfilePageComponent - User profile and bookings management page
@@ -16,35 +18,22 @@ import { MyTripComponent } from './my-trip/my-trip.component';
  * Responsibilities:
  * - Display user profile fetched from GET /api/users/profile
  * - Display user's bookings from BookingService
+ * - Display user's community posts and activity
  * - Handle profile display with loading and error states
  * - Enforce user isolation (profile belongs to authenticated user)
  *
  * Layout:
- * - Left sidebar: Navigation (Trips, Profile, Wallet)
+ * - Left sidebar: Navigation (Trips, Profile, Community, Wallet)
  * - Right panel: Content area for selected section
  *   - Trips: List of user's bookings (via MyTripComponent)
  *   - Profile: User profile information (name, email, DOB, gender, phone)
+ *   - Community: User's posts and interactions
  *   - Wallet: Placeholder for future feature
- *
- * Data Flow:
- * 1. Component initializes
- * 2. AuthService validates user is logged in
- * 3. CustomerService.getProfile() fetches user profile from API
- * 4. BusService.getbusmongo() fetches user's bookings
- * 5. Profile and bookings displayed in respective sections
- *
- * Error Handling:
- * - Profile load error: Shows error message
- * - Booking load error: Logs error and shows empty list
- * - 401 Unauthorized: Would be handled by auth interceptor
- * - 403 Forbidden: Would indicate security violation (handled by interceptor)
- *
- * Requirements: 2.3, 2.4 (user profile isolation)
  */
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, TranslateModule, MyTripComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, TranslateModule, MyTripComponent, PostCardComponent],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.css',
 })
@@ -68,6 +57,11 @@ export class ProfilePageComponent implements OnInit {
     gender: '',
     dateOfBirth: '',
   };
+
+  // Community Activity state
+  userPosts: Post[] = [];
+  loadingCommunity: boolean = false;
+  totalLikesReceived: number = 0;
   
   // Legacy properties (kept for backward compatibility during transition)
   currentcustomer: any = null;
@@ -76,16 +70,20 @@ export class ProfilePageComponent implements OnInit {
 
   /**
    * Handle sidebar navigation clicks
-   * @param selected - Selected section: 'trips', 'profile', or 'wallet'
+   * @param selected - Selected section: 'trips', 'profile', 'community', or 'wallet'
    */
   handlelistitemclick(selected: string): void {
     this.selecteditem = selected;
+    if (selected === 'community') {
+      this.loadUserCommunityActivity();
+    }
   }
 
   constructor(
     private busbooking: BusService,
-    private authservice: AuthService,
+    public authservice: AuthService,
     private customerService: CustomerService,
+    private communityService: CommunityService,
     private router: Router,
   ) {}
 
@@ -239,5 +237,52 @@ export class ProfilePageComponent implements OnInit {
         this.saveErrorMessage = err.message || 'Failed to update profile. Please try again.';
       },
     });
+  }
+
+  /**
+   * Load current user's community posts and calculate interaction metrics
+   */
+  loadUserCommunityActivity(): void {
+    const user = this.authservice.currentUser;
+    if (!user) return;
+    this.loadingCommunity = true;
+    const authorId = user.id || user.googleId || user['_id'];
+
+    this.communityService.getUserPosts(authorId).subscribe({
+      next: ({ posts }) => {
+        this.userPosts = posts || [];
+        this.totalLikesReceived = this.userPosts.reduce(
+          (sum, p) => sum + (p.likes ? p.likes.length : 0),
+          0
+        );
+        this.loadingCommunity = false;
+      },
+      error: () => {
+        this.loadingCommunity = false;
+      }
+    });
+  }
+
+  onDeleteUserPost(postId: string): void {
+    this.communityService.deletePost(postId).subscribe({
+      next: () => {
+        this.userPosts = this.userPosts.filter(p => p._id !== postId);
+        this.totalLikesReceived = this.userPosts.reduce(
+          (sum, p) => sum + (p.likes ? p.likes.length : 0),
+          0
+        );
+      }
+    });
+  }
+
+  onUserPostUpdated(updatedPost: Post): void {
+    const idx = this.userPosts.findIndex(p => p._id === updatedPost._id);
+    if (idx !== -1) {
+      this.userPosts[idx] = updatedPost;
+    }
+  }
+
+  navigateToCommunity(): void {
+    this.router.navigate(['/community']);
   }
 }

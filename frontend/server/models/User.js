@@ -40,7 +40,7 @@ const userSchema = new Schema(
     },
     notificationPreferences: {
       type: Object,
-      default: { email: true, push: false, inApp: true },
+      default: { email: true, push: false, inApp: true, promotional: true },
     },
     preferredLanguage: {
       type: String,

@@ -36,6 +36,7 @@ export class CommunityFeedComponent implements OnInit {
   filterTag = '';
   searchQuery = '';
   availableTags: string[] = [];
+  sortBy: 'recent' | 'popular' = 'recent';
 
   // Active comment box
   activeCommentPostId: string | null = null;
@@ -51,6 +52,11 @@ export class CommunityFeedComponent implements OnInit {
     this.loadPosts();
   }
 
+  setSortBy(sort: 'recent' | 'popular'): void {
+    this.sortBy = sort;
+    this.loadPosts();
+  }
+
   loadTopics(): void {
     this.communityService.getTopics().subscribe({
       next: t => this.topics = t,
@@ -61,7 +67,7 @@ export class CommunityFeedComponent implements OnInit {
   loadPosts(topicId?: string): void {
     this.isLoading = true;
     this.error = '';
-    this.communityService.getPosts(topicId, this.page).subscribe({
+    this.communityService.getPosts(topicId, this.page, undefined, this.sortBy).subscribe({
       next: ({ posts, total }) => {
         this.posts = posts;
         this.total = total;

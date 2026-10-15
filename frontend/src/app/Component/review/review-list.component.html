@@ -1,9 +1,9 @@
-<div class="review-list">
-  <!-- Average Rating Badge -->
-  <div class="review-summary">
-    <div class="average-rating">
-      <div class="rating-number">{{ averageRating.toFixed(1) }}</div>
-      <div class="rating-stars">
+<div class="review-list-container">
+  <!-- Top Summary Box -->
+  <div class="rating-overview-card" *ngIf="!isLoading">
+    <div class="overview-left">
+      <div class="big-score">{{ averageRating.toFixed(1) }}</div>
+      <div class="stars-group">
         <mat-icon
           *ngFor="let star of getRatingStars()"
           [class.filled]="star <= Math.round(averageRating)"
@@ -11,38 +11,108 @@
           {{ star <= Math.round(averageRating) ? 'star' : 'star_border' }}
         </mat-icon>
       </div>
-      <div class="review-count">Based on {{ totalReviews }} review{{ totalReviews !== 1 ? 's' : '' }}</div>
+      <div class="review-count-label">
+        Based on {{ totalReviews }} verified review{{ totalReviews !== 1 ? 's' : '' }}
+      </div>
+    </div>
+
+    <!-- Rating Distribution Bars -->
+    <div class="overview-right">
+      <div class="distribution-row" *ngFor="let star of [5, 4, 3, 2, 1]">
+        <span class="dist-star-label">{{ star }} ★</span>
+        <div class="dist-bar-bg">
+          <div class="dist-bar-fill" [style.width.%]="getStarPercent(star)"></div>
+        </div>
+        <span class="dist-count">{{ distribution[star] || 0 }}</span>
+      </div>
     </div>
   </div>
 
-  <!-- Review Form (if user can review or editing) -->
+  <!-- Write Review Button (if user is eligible from completed journey) -->
+  <div class="review-action-banner" *ngIf="canReview && !userExistingReview && !showCreateForm">
+    <div class="banner-text">
+      <mat-icon class="banner-icon">verified</mat-icon>
+      <span>You have a completed booking! Help fellow travellers by sharing your journey experience.</span>
+    </div>
+    <button class="btn-write-review" (click)="showCreateForm = true">
+      <mat-icon>rate_review</mat-icon> Rate & Review
+    </button>
+  </div>
+
+  <!-- Review Form for New Review -->
   <app-review-form
-    *ngIf="(canReview && !userExistingReview) || (showEditForm && userExistingReview)"
+    *ngIf="showCreateForm && canReview && !userExistingReview"
     [busId]="busId"
+    [routeId]="routeId"
     [bookingId]="userBookingId!"
-    [existingReview]="showEditForm ? userExistingReview : null"
-    [canReview]="canReview"
+    [canReview]="true"
     (reviewSubmitted)="onReviewSubmitted()"
+  ></app-review-form>
+
+  <!-- Review Form for Editing Existing Review -->
+  <app-review-form
+    *ngIf="showEditForm && userExistingReview"
+    [busId]="busId"
+    [routeId]="routeId"
+    [bookingId]="userExistingReview.bookingId"
+    [existingReview]="userExistingReview"
+    [canReview]="true"
     (reviewEdited)="onReviewEdited()"
   ></app-review-form>
 
+  <!-- Filters Row -->
+  <div class="reviews-filter-bar" *ngIf="!isLoading && totalReviews > 0">
+    <h3 class="section-heading">Verified Passenger Reviews</h3>
+    <div class="filter-pills">
+      <button
+        class="filter-pill"
+        [class.active]="activeFilter === 'all'"
+        (click)="applyFilter('all')"
+      >
+        All ({{ totalReviews }})
+      </button>
+      <button
+        class="filter-pill"
+        [class.active]="activeFilter === '5'"
+        (click)="applyFilter('5')"
+      >
+        5 Stars ({{ distribution[5] || 0 }})
+      </button>
+      <button
+        class="filter-pill"
+        [class.active]="activeFilter === 'trusted'"
+        (click)="applyFilter('trusted')"
+      >
+        ⭐ Trusted Reviewers
+      </button>
+    </div>
+  </div>
+
   <!-- Loading State -->
-  <div class="loading" *ngIf="isLoading">
+  <div class="loading-state" *ngIf="isLoading">
     <div class="spinner"></div>
-    Loading reviews...
+    <span>Loading reviews...</span>
   </div>
 
   <!-- No Reviews State -->
-  <div class="no-reviews" *ngIf="!isLoading && totalReviews === 0">
-    <mat-icon>rate_review</mat-icon>
-    <p>No reviews yet. Be the first to review this bus!</p>
+  <div class="empty-reviews-state" *ngIf="!isLoading && totalReviews === 0">
+    <mat-icon class="empty-icon">reviews</mat-icon>
+    <h4>No reviews yet</h4>
+    <p>Reviews will appear here after verified passengers complete their journey.</p>
   </div>
 
-  <!-- Review Items -->
-  <div class="reviews-container" *ngIf="!isLoading && totalReviews > 0">
-    <h3 class="reviews-title">Reviews ({{ totalReviews }})</h3>
+  <!-- Filter Empty State -->
+  <div class="empty-reviews-state" *ngIf="!isLoading && totalReviews > 0 && filteredReviews.length === 0">
+    <mat-icon class="empty-icon">filter_alt_off</mat-icon>
+    <h4>No matching reviews</h4>
+    <p>No reviews match the selected filter.</p>
+    <button class="btn-clear-filter" (click)="applyFilter('all')">View All Reviews</button>
+  </div>
+
+  <!-- Review Items List -->
+  <div class="reviews-list" *ngIf="!isLoading && filteredReviews.length > 0">
     <app-review-item
-      *ngFor="let review of reviews"
+      *ngFor="let review of filteredReviews"
       [review]="review"
       [currentUserId]="currentUserId"
       [currentUserRole]="currentUserRole"

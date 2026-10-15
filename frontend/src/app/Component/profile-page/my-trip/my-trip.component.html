@@ -79,7 +79,7 @@
       </p>
       <p>
         <span class="material-icons">radio_button_checked</span>
-        Seats: {{ booking.seats?.join(', ') || '—' }}
+        Seats: {{ booking.seats.join(', ') || '—' }}
       </p>
       <p>
         <span class="material-icons">radio_button_checked</span>
@@ -178,7 +178,7 @@
       </p>
       <p>
         <span class="material-icons">radio_button_checked</span>
-        Seats: {{ booking.seats?.join(', ') || '—' }}
+        Seats: {{ booking.seats.join(', ') || '—' }}
       </p>
       <p>
         <span class="material-icons">radio_button_checked</span>
@@ -203,11 +203,27 @@
     </div>
   </div>
 
-  <!-- Action Buttons Section (completed bookings can't be cancelled) -->
+  <!-- Action Buttons Section for Completed Bookings -->
   <div class="booking-actions">
-    <span class="cannot-cancel-text">
-      This booking cannot be cancelled
-    </span>
+    <button
+      class="btn-review-trip"
+      (click)="toggleReview(booking)"
+      [class.active]="activeReviewBookingId === getBookingId(booking)">
+      <span class="material-icons">rate_review</span>
+      {{ activeReviewBookingId === getBookingId(booking) ? 'Close Review' : (bookingReviews.get(getBookingId(booking)) ? 'View / Edit Review' : 'Rate & Review Journey') }}
+    </button>
+  </div>
+
+  <!-- Review Form Container -->
+  <div *ngIf="activeReviewBookingId === getBookingId(booking)" class="trip-review-wrapper">
+    <app-review-form
+      [busId]="getBusId(booking)"
+      [routeId]="getRouteId(booking)"
+      [bookingId]="getBookingId(booking)"
+      [existingReview]="bookingReviews.get(getBookingId(booking))"
+      (reviewSubmitted)="onReviewSubmitted(getBookingId(booking))"
+      (reviewEdited)="onReviewEdited(getBookingId(booking))">
+    </app-review-form>
   </div>
 </div>
 </div>

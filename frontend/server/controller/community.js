@@ -2,20 +2,51 @@ const Post          = require('../models/post');
 const Comment       = require('../models/comment');
 const ForumTopic    = require('../models/forumTopic');
 const ModerationLog = require('../models/moderationLog');
+const User          = require('../models/User');
 
 // ── Posts ─────────────────────────────────────────────────────────────────────
 
-// GET /api/v1/community/posts?forumTopicId=&page=1&limit=20
+// GET /api/v1/community/posts?forumTopicId=&authorId=&sortBy=&page=1&limit=20
 exports.getPosts = async (req, res) => {
   try {
-    const { forumTopicId, page = 1, limit = 20 } = req.query;
+    const { forumTopicId, authorId, sortBy, page = 1, limit = 20 } = req.query;
     const filter = { hidden: false };
     if (forumTopicId) filter.forumTopicId = forumTopicId;
-    const posts = await Post.find(filter)
+
+    if (authorId) {
+      const isObjectId = typeof authorId === 'string' && /^[0-9a-fA-F]{24}$/.test(authorId);
+      const user = await User.findOne({
+        $or: [
+          { googleId: authorId },
+          ...(isObjectId ? [{ _id: authorId }] : [])
+        ]
+      }).select('_id googleId').lean().exec();
+
+      if (user) {
+        filter.$or = [
+          { authorId: authorId },
+          { authorId: user.googleId },
+          { authorId: user._id.toString() }
+        ];
+      } else {
+        filter.authorId = authorId;
+      }
+    }
+
+    let posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .lean();
+
+    if (sortBy === 'popular') {
+      posts.sort((a, b) => {
+        const scoreA = (a.likes?.length || 0) * 2 + (a.shareCount || 0);
+        const scoreB = (b.likes?.length || 0) * 2 + (b.shareCount || 0);
+        return scoreB - scoreA;
+      });
+    }
+
     const total = await Post.countDocuments(filter);
     res.json({ posts, total, page: Number(page) });
   } catch (err) {
@@ -199,7 +230,17 @@ exports.reportComment = async (req, res) => {
 // GET /api/v1/community/topics
 exports.getTopics = async (req, res) => {
   try {
-    const topics = await ForumTopic.find().sort({ pinned: -1, createdAt: -1 }).lean();
+    let topics = await ForumTopic.find().sort({ pinned: -1, createdAt: -1 }).lean();
+    if (!topics || topics.length === 0) {
+      const defaultTopics = [
+        { title: 'Routes & Journeys', description: 'Discuss popular bus routes, stops, road conditions, and scenic highlights.', pinned: true, createdBy: 'system' },
+        { title: 'Destinations & Sightseeing', description: 'City travel guides, must-visit tourist destinations, and local food spots.', pinned: true, createdBy: 'system' },
+        { title: 'Travel Advice & Tips', description: 'Packing essentials, luggage policies, safety advice, and booking tips.', pinned: false, createdBy: 'system' },
+        { title: 'Bus Journey Stories', description: 'Share memorable travel stories, bus reviews, photos, and road experiences.', pinned: false, createdBy: 'system' },
+      ];
+      await ForumTopic.insertMany(defaultTopics);
+      topics = await ForumTopic.find().sort({ pinned: -1, createdAt: -1 }).lean();
+    }
     res.json(topics);
   } catch (err) {
     console.error(err);

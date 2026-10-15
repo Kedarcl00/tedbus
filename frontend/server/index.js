@@ -11,15 +11,28 @@ const app = express();
 const logger = new LoggerService();
 
 // CORS configuration - Allow Angular frontend to make requests
+const allowedOrigins = [
+  'http://localhost:4200',  // Angular dev server
+  'http://localhost:3000',  // Alternative dev port
+  process.env.CLIENT_URL,   // Production frontend (e.g. Vercel URL)
+].filter(Boolean);
+
 const corsOptions = {
-  origin: [
-    'http://localhost:4200',  // Angular dev server
-    'http://localhost:3000',  // Alternative dev port
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true,           // Allow cookies and auth headers
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Role']  // Added X-User-Id and X-User-Role
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Role']
 };
 
 app.use(cors(corsOptions));
@@ -71,10 +84,13 @@ app.use(reviewRoutes);
 
 // Route Planner routes
 const routePlannerController = require('./controller/route-planner');
-app.get('/api/route-planner/routes', routePlannerController.getSavedRoutes);
-app.post('/api/route-planner/routes', routePlannerController.saveRoute);
-app.delete('/api/route-planner/routes/:id', routePlannerController.deleteRoute);
-app.post('/api/route-planner/calculate', routePlannerController.calculateRoute);
+app.get('/api/route-planner/cities',            routePlannerController.getCities);
+app.get('/api/route-planner/routes',            routePlannerController.getSavedRoutes);
+app.post('/api/route-planner/routes',           routePlannerController.saveRoute);
+app.patch('/api/route-planner/routes/:id/use',  routePlannerController.incrementUseCount);
+app.delete('/api/route-planner/routes/:id',     routePlannerController.deleteRoute);
+app.post('/api/route-planner/calculate',        routePlannerController.calculateRoute);
+app.get('/api/route-planner/traffic',           routePlannerController.getTrafficUpdate);
 
 /**
  * Initialize database connection on application startup

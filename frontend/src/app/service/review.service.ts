@@ -10,12 +10,17 @@ import { url } from '../config';
 export interface Review {
   _id?: string;
   userId: string;
+  userName?: string;
+  userPicture?: string;
+  isVerifiedUser?: boolean;
+  isTrustedReviewer?: boolean;
   bookingId: string;
-  busId: string;
+  busId?: string;
+  routeId?: string;
   rating: number;
   reviewText: string;
-  createdAt: Date;
-  editedAt?: Date;
+  createdAt: Date | string;
+  editedAt?: Date | string;
   helpful: string[];
   reported: string[];
   hidden: boolean;
@@ -24,7 +29,8 @@ export interface Review {
 
 export interface ReviewSubmitData {
   bookingId: string;
-  busId: string;
+  busId?: string;
+  routeId?: string;
   rating: number;
   reviewText: string;
 }
@@ -36,9 +42,11 @@ export interface ReviewEditData {
 
 export interface BusReviewsResponse {
   success: boolean;
-  busId: string;
+  busId?: string;
+  routeId?: string;
   totalReviews: number;
   averageRating: number;
+  distribution?: { [key: number]: number };
   reviews: Review[];
 }
 
@@ -71,7 +79,7 @@ export class ReviewService {
   /**
    * Submit a new review
    */
-  submitReview(data: ReviewSubmitData, userId: string): Observable<any> {
+  submitReview(data: ReviewSubmitData, userId?: string): Observable<any> {
     return this.http.post(this.baseUrl, data, {
       headers: this.getHeaders(userId)
     });
@@ -80,7 +88,7 @@ export class ReviewService {
   /**
    * Edit an existing review (owner only, within 24h)
    */
-  editReview(reviewId: string, data: ReviewEditData, userId: string): Observable<any> {
+  editReview(reviewId: string, data: ReviewEditData, userId?: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/${reviewId}`, data, {
       headers: this.getHeaders(userId)
     });
@@ -99,6 +107,20 @@ export class ReviewService {
    */
   getBusReviews(busId: string): Observable<BusReviewsResponse> {
     return this.http.get<BusReviewsResponse>(`${this.baseUrl}/bus/${busId}`);
+  }
+
+  /**
+   * Get reviews for a route (public)
+   */
+  getRouteReviews(routeId: string): Observable<BusReviewsResponse> {
+    return this.http.get<BusReviewsResponse>(`${this.baseUrl}/route/${routeId}`);
+  }
+
+  /**
+   * Get review for a specific booking
+   */
+  getBookingReview(bookingId: string): Observable<{ success: boolean; review: Review | null }> {
+    return this.http.get<{ success: boolean; review: Review | null }>(`${this.baseUrl}/booking/${bookingId}`);
   }
 
   /**

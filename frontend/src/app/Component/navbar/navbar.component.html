@@ -32,6 +32,26 @@
         </svg>
         <p style="color: var(--color-text)">{{ 'NAV.BUS_TICKETS' | translate }}</p>
       </a>
+      <!-- Route Planner -->
+      <a [routerLink]="['/route-planner']"
+         routerLinkActive="active"
+         class="flex flex-col items-center text-center gap-1 px-2 py-3 rounded-lg group hover:bg-gray-100 sm:bg-transparent"
+         style="color: var(--color-text); cursor: pointer;"
+         aria-label="Route Planner"
+         title="Route Planner">
+        <mat-icon class="group-hover:text-red-500" style="color: var(--color-text)">map</mat-icon>
+        <p style="color: var(--color-text)">Route Planner</p>
+      </a>
+
+      <!-- Community -->
+      <a [routerLink]="['/community']"
+         routerLinkActive="active"
+         class="flex flex-col items-center text-center gap-1 px-2 py-3 rounded-lg group hover:bg-gray-100 sm:bg-transparent"
+         style="color: var(--color-text); cursor: pointer;"
+         title="Community">
+        <mat-icon style="color: var(--color-text)">groups</mat-icon>
+        <p style="color: var(--color-text)">Community</p>
+      </a>
     </div>
   </div>
 
@@ -86,6 +106,7 @@
       </button>
       <mat-menu #accountMenu="matMenu">
         <button mat-menu-item (click)="navigate('/my-trips')">{{ 'NAV.MY_TRIPS' | translate }}</button>
+        <button mat-menu-item (click)="navigate('/route-planner')">🗺️ Route Planner</button>
         <button mat-menu-item>{{ 'NAV.WALLET_CARDS' | translate }}</button>
         <button mat-menu-item (click)="navigate('/profile')">{{ 'NAV.MY_PROFILE' | translate }}</button>
         <button mat-menu-item>{{ 'NAV.WALLET' | translate }}</button>

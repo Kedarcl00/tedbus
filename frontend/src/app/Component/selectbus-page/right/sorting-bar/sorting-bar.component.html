@@ -8,11 +8,11 @@
       <div>BUSES LIST</div>
       <div>SORT BY :</div>
     </div>
-    <div class="main-container2" >Departure</div>
-    <div class="main-container3" >Duration</div>
-    <div class="main-container4" >Arrivals</div>
-    <div class="main-container5" >Ratings</div>
-    <div class="main-container6">Fare</div>
-    <div class="main-container7">Seats Available</div>
+    <div class="main-container2" [class.active]="activeSort === 'departure'" (click)="handleSort('departure')">Departure</div>
+    <div class="main-container3" [class.active]="activeSort === 'duration'" (click)="handleSort('duration')">Duration</div>
+    <div class="main-container4" [class.active]="activeSort === 'arrival'" (click)="handleSort('arrival')">Arrivals</div>
+    <div class="main-container5" [class.active]="activeSort === 'rating'" (click)="handleSort('rating')">Ratings</div>
+    <div class="main-container6" [class.active]="activeSort === 'fare'" (click)="handleSort('fare')">Fare</div>
+    <div class="main-container7" [class.active]="activeSort === 'seats'" (click)="handleSort('seats')">Seats Available</div>
   </div>
   

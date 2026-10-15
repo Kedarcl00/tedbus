@@ -23,6 +23,11 @@
           <div class="leftPannel_eachListItem_text">{{ 'PROFILE.MY_PROFILE' | translate }}</div>
         </li>
         <div class="line"></div>
+        <li class="leftPannel_eachListOption" (click)="handlelistitemclick('community')">
+          <i class="material-icons" style="color: grey; font-size: 30px;">forum</i>
+          <div class="leftPannel_eachListItem_text">{{ 'COMMUNITY.COMMUNITY_ACTIVITY' | translate }}</div>
+        </li>
+        <div class="line"></div>
         <li class="leftPannel_eachListOption" (click)="handlelistitemclick('wallet')">
           <i class="material-icons" style="color: grey; font-size: 30px;">account_balance_wallet</i>
   
@@ -162,5 +167,51 @@
         </form>
       </div>
   
+    </div>
+
+    <!-- Community Activity Section -->
+    <div *ngIf="selecteditem === 'community'" class="rightPannel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0 15px 120px; width: 78%;">
+        <span class="profileHeading" style="margin: 0;">{{ 'COMMUNITY.COMMUNITY_ACTIVITY' | translate }}</span>
+        <button (click)="navigateToCommunity()" style="cursor: pointer; background: #d84e55; color: white; border: none; padding: 7px 18px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px;">add</mat-icon>
+          {{ 'COMMUNITY.NEW_POST' | translate }}
+        </button>
+      </div>
+
+      <!-- User Engagement Summary -->
+      <div class="profilebox" style="margin-top: 0; padding: 18px 24px; display: flex; gap: 50px;">
+        <div>
+          <div class="userDetailHeading">Stories & Tips Shared</div>
+          <div class="userDetailInfo" style="font-size: 22px; color: #d84e55;">{{ userPosts.length }}</div>
+        </div>
+        <div>
+          <div class="userDetailHeading">Total Likes Received</div>
+          <div class="userDetailInfo" style="font-size: 22px; color: #1976d2;">{{ totalLikesReceived }}</div>
+        </div>
+      </div>
+
+      <!-- User's Posts List -->
+      <div style="margin: 20px 0 20px 120px; width: 78%;">
+        <div *ngIf="loadingCommunity" style="text-align: center; padding: 30px; color: #888;">
+          Loading your stories and tips...
+        </div>
+
+        <div *ngIf="!loadingCommunity && userPosts.length === 0" style="text-align: center; padding: 40px; background: white; border-radius: 8px; border: 1px dashed #ccc;">
+          <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You haven't shared any travel stories or bus tips yet.</p>
+          <button (click)="navigateToCommunity()" style="cursor: pointer; background: #d84e55; color: white; border: none; padding: 8px 20px; border-radius: 4px; font-weight: 600;">
+            Share Your First Story
+          </button>
+        </div>
+
+        <div *ngIf="!loadingCommunity && userPosts.length > 0">
+          <app-post-card
+            *ngFor="let p of userPosts"
+            [post]="p"
+            (delete)="onDeleteUserPost($event)"
+            (postUpdated)="onUserPostUpdated($event)">
+          </app-post-card>
+        </div>
+      </div>
     </div>
   </div>

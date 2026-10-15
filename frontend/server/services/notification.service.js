@@ -110,10 +110,13 @@ class NotificationService {
     try {
       const notification = await Notification.create({
         userId: notificationPayload.userId,
+        channel: notificationPayload.channel || 'in-app',
         type: notificationPayload.type,
         title: notificationPayload.title,
-        message: notificationPayload.message,
-        data: notificationPayload.data || {},
+        body: notificationPayload.body || notificationPayload.message || '',
+        metadata: notificationPayload.data || {},
+        status: 'delivered',
+        delivered: true,
         read: false,
         createdAt: new Date(),
       });

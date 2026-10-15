@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { BottomTabComponent } from '../bus-book/bottom-tab/bottom-tab.component';
 import { ArrivalTimeService } from '../../../../service/arrival-time.service';
+import { ReviewService } from '../../../../service/review.service';
 
 @Component({
   selector: 'app-bus-box',
@@ -24,6 +25,8 @@ export class BusBoxComponent implements OnInit {
   @Input() routedetails: any;
   @Input() busid: string = '';
   @Input() selecteddate: string = '';
+  @Input() busRating?: number;
+  @Input() busTotalReviews?: number;
 
   avgrating: number = 0;
   totalreview: number = 0;
@@ -33,17 +36,38 @@ export class BusBoxComponent implements OnInit {
   arrivalIsNextDay: boolean = false;
   busarrivalTimeFormatted: string = '';
 
-  constructor(private arrivalTimeService: ArrivalTimeService) {}
+  constructor(
+    private arrivalTimeService: ArrivalTimeService,
+    private reviewService: ReviewService
+  ) {}
 
   ngOnInit(): void {
-    // --- Rating ---
-    const ratings = this.rating || [];
-    ratings.forEach((item, index) => {
-      this.avgrating += item;
-      this.totalreview += index;
-    });
-    if (this.totalreview === 0) this.totalreview = 1;
-    this.avgrating = +(this.avgrating / this.totalreview).toFixed(1);
+    // --- Separate bus rating from backend props or fallback ---
+    if (this.busRating !== undefined && this.busRating !== null && this.busTotalReviews !== undefined) {
+      this.avgrating = this.busRating;
+      this.totalreview = this.busTotalReviews;
+    } else {
+      const ratings = this.rating || [];
+      ratings.forEach((item, index) => {
+        this.avgrating += item;
+        this.totalreview += index;
+      });
+      if (this.totalreview === 0) this.totalreview = 1;
+      this.avgrating = +(this.avgrating / this.totalreview).toFixed(1);
+    }
+
+    // --- Dynamic reviews for this specific bus from API ---
+    if (this.busid) {
+      this.reviewService.getBusReviews(this.busid).subscribe({
+        next: (res) => {
+          if (res && res.totalReviews > 0) {
+            this.avgrating = res.averageRating;
+            this.totalreview = res.totalReviews;
+          }
+        },
+        error: () => {}
+      });
+    }
 
     // --- Bus type display name ---
     const typeMap: { [key: string]: string } = {

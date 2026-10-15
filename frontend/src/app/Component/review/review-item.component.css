@@ -1,21 +1,113 @@
 .review-item {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--color-card, #ffffff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 12px;
+  padding: 18px;
   margin-bottom: 16px;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
+  color: var(--color-text, #212121);
 }
 
 .review-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px var(--color-shadow, rgba(0, 0, 0, 0.08));
 }
 
-.review-header {
+.review-item.trusted-border {
+  border-left: 4px solid #ffb300;
+}
+
+.reviewer-meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.avatar-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-alt, #eeeeee);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-primary, #e53935);
+}
+
+.reviewer-info {
+  flex: 1;
+}
+
+.name-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text, #212121);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.badge-icon {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+}
+
+.verified-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.trusted-badge {
+  background: #fff8e1;
+  color: #f57f17;
+  border: 1px solid #ffe082;
+}
+
+.review-date {
+  font-size: 12px;
+  color: var(--color-text-muted, #757575);
+  margin-top: 2px;
+}
+
+.edited-badge {
+  font-style: italic;
+  margin-left: 4px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .rating-stars {
@@ -24,64 +116,79 @@
 }
 
 .rating-stars mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  color: #ddd;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #bdbdbd;
 }
 
 .rating-stars mat-icon.filled {
   color: #ffc107;
 }
 
-.review-date {
+.rating-number {
   font-size: 13px;
-  color: #888;
-}
-
-.edited-badge {
-  font-style: italic;
-  color: #999;
-  margin-left: 4px;
+  font-weight: 700;
+  color: var(--color-text, #212121);
 }
 
 .review-text {
   font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-  margin-bottom: 16px;
+  line-height: 1.6;
+  color: var(--color-text, #333333);
+  margin-bottom: 14px;
   word-wrap: break-word;
+}
+
+.lock-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--color-surface-alt, #eeeeee);
+  color: var(--color-text-muted, #757575);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.lock-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
 }
 
 .review-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .action-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  background: transparent;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #555;
+  background: var(--color-surface, #f9f9f9);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text, #424242);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .action-button mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .action-button:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #ccc;
+  background: var(--color-surface-alt, #eeeeee);
+  border-color: #bdbdbd;
 }
 
 .action-button:disabled {
@@ -92,18 +199,18 @@
 .action-button.active {
   background: #e3f2fd;
   border-color: #2196f3;
-  color: #2196f3;
+  color: #1976d2;
 }
 
 .action-button.reported {
   background: #ffebee;
-  border-color: #f44336;
-  color: #f44336;
+  border-color: #ef5350;
+  color: #c62828;
 }
 
 .edit-button {
-  color: #2196f3;
-  border-color: #2196f3;
+  color: #1976d2;
+  border-color: #bbdefb;
 }
 
 .edit-button:hover:not(:disabled) {
@@ -111,8 +218,8 @@
 }
 
 .delete-button {
-  color: #f44336;
-  border-color: #f44336;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
 
 .delete-button:hover:not(:disabled) {
@@ -120,10 +227,10 @@
 }
 
 .moderate-button {
-  color: #ff9800;
-  border-color: #ff9800;
+  color: #f57f17;
+  border-color: #ffe082;
 }
 
 .moderate-button:hover:not(:disabled) {
-  background: #fff3e0;
+  background: #fff8e1;
 }

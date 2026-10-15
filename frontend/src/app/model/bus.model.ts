@@ -6,6 +6,8 @@ export interface Bus {
     arrivalTime?: string;
     fare?: number;          // Fare per seat stored in the database
     rating: number[];
+    avgRating?: number;
+    totalReviews?: number;
     totalSeats?: number;
     routes: string;
     images: string;

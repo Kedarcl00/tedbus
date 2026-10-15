@@ -28,7 +28,8 @@ export class ReviewItemComponent {
   constructor(private authService: AuthService) {}
 
   get isOwner(): boolean {
-    return this.currentUserId === this.review.userId;
+    if (!this.currentUserId || !this.review.userId) return false;
+    return String(this.currentUserId) === String(this.review.userId);
   }
 
   get canEdit(): boolean {
@@ -36,6 +37,12 @@ export class ReviewItemComponent {
     const timeSinceCreation = Date.now() - new Date(this.review.createdAt).getTime();
     const twentyFourHours = 24 * 60 * 60 * 1000;
     return timeSinceCreation <= twentyFourHours;
+  }
+
+  get hoursLeftToEdit(): number {
+    const elapsed = Date.now() - new Date(this.review.createdAt).getTime();
+    const remainMs = (24 * 60 * 60 * 1000) - elapsed;
+    return Math.max(0, Math.ceil(remainMs / (60 * 60 * 1000)));
   }
 
   get canDelete(): boolean {
@@ -51,11 +58,11 @@ export class ReviewItemComponent {
   }
 
   get hasMarkedHelpful(): boolean {
-    return this.currentUserId ? this.review.helpful.includes(this.currentUserId) : false;
+    return this.currentUserId ? (this.review.helpful || []).includes(String(this.currentUserId)) : false;
   }
 
   get hasReported(): boolean {
-    return this.currentUserId ? this.review.reported.includes(this.currentUserId) : false;
+    return this.currentUserId ? (this.review.reported || []).includes(String(this.currentUserId)) : false;
   }
 
   getRatingStars(): number[] {

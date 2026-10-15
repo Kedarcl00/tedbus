@@ -21,8 +21,25 @@ const ReviewSchema = new Schema(
     },
     busId: {
       type: String,
-      required: true,
+      required: false,
       index: true,
+    },
+    routeId: {
+      type: String,
+      required: false,
+      index: true,
+    },
+    userName: {
+      type: String,
+      default: '',
+    },
+    userPicture: {
+      type: String,
+      default: '',
+    },
+    isVerifiedUser: {
+      type: Boolean,
+      default: true,
     },
     rating: {
       type: Number,
@@ -68,6 +85,7 @@ const ReviewSchema = new Schema(
 
 // Indexes for common queries
 ReviewSchema.index({ busId: 1, hidden: 1 });
+ReviewSchema.index({ routeId: 1, hidden: 1 });
 ReviewSchema.index({ userId: 1 });
 
 module.exports = mongoose.model('Review', ReviewSchema);
