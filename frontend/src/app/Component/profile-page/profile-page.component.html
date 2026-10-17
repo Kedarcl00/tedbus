@@ -1,8 +1,8 @@
 <div class="ProfilePannel">
     <div class="leftPart">
       <ul class="leftPannel">
-        <li class="leftPannel_eachListItem">
-          <mat-icon style="color: grey; font-size: 30px; height: 100% ;width:100%;">perm_identity</mat-icon>
+        <li class="leftPannel_eachListOption" (click)="handlelistitemclick('dashboard')" style="cursor:pointer;">
+          <mat-icon style="color: grey; font-size: 30px; height: 100% ;width:100%;">dashboard</mat-icon>
   
           <div class="leftPannel_eachListItem_text">
             {{ 'PROFILE.DASHBOARD' | translate }}
@@ -38,6 +38,44 @@
     </div>
     <div class="seprator"></div>
   
+    <!-- Dashboard Overview Section -->
+    <div *ngIf="selecteditem === 'dashboard'" class="rightPannel">
+      <span class="profileHeading">{{ 'PROFILE.DASHBOARD' | translate }}</span>
+
+      <!-- Welcome card -->
+      <div class="profilebox" style="display:flex; align-items:center; gap:20px; padding:20px 30px;">
+        <mat-icon style="font-size:48px; width:48px; height:48px; color:#d84e55;">account_circle</mat-icon>
+        <div>
+          <div style="font-size:20px; font-weight:700; color:#333;">{{ userProfile?.name || currentname || 'Welcome!' }}</div>
+          <div style="font-size:13px; color:#888; margin-top:4px;">{{ userProfile?.email || currentemail }}</div>
+        </div>
+      </div>
+
+      <!-- Quick action cards -->
+      <div style="display:flex; flex-wrap:wrap; gap:16px; margin:20px 0 20px 120px; width:78%;">
+        <div (click)="handlelistitemclick('trips')" style="cursor:pointer; flex:1; min-width:160px; background:#fff5f5; border:1.5px solid #f5c0c0; border-radius:10px; padding:20px 24px; text-align:center; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px #f5c0c066'" onmouseout="this.style.boxShadow='none'" >
+          <mat-icon style="font-size:36px; width:36px; height:36px; color:#d84e55;">confirmation_number</mat-icon>
+          <div style="font-weight:600; margin-top:8px;">{{ 'PROFILE.MY_TRIPS' | translate }}</div>
+          <div style="font-size:12px; color:#888; margin-top:4px;">View all bookings</div>
+        </div>
+        <div (click)="handlelistitemclick('profile')" style="cursor:pointer; flex:1; min-width:160px; background:#f5f9ff; border:1.5px solid #c0d4f5; border-radius:10px; padding:20px 24px; text-align:center; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px #c0d4f566'" onmouseout="this.style.boxShadow='none'">
+          <mat-icon style="font-size:36px; width:36px; height:36px; color:#1976d2;">manage_accounts</mat-icon>
+          <div style="font-weight:600; margin-top:8px;">{{ 'PROFILE.MY_PROFILE' | translate }}</div>
+          <div style="font-size:12px; color:#888; margin-top:4px;">Edit your details</div>
+        </div>
+        <div (click)="handlelistitemclick('community')" style="cursor:pointer; flex:1; min-width:160px; background:#f5fff7; border:1.5px solid #b2dfc0; border-radius:10px; padding:20px 24px; text-align:center; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px #b2dfc066'" onmouseout="this.style.boxShadow='none'">
+          <mat-icon style="font-size:36px; width:36px; height:36px; color:#388e3c;">forum</mat-icon>
+          <div style="font-weight:600; margin-top:8px;">{{ 'COMMUNITY.COMMUNITY_ACTIVITY' | translate }}</div>
+          <div style="font-size:12px; color:#888; margin-top:4px;">Your posts &amp; stories</div>
+        </div>
+        <div (click)="handlelistitemclick('wallet')" style="cursor:pointer; flex:1; min-width:160px; background:#fffdf5; border:1.5px solid #ffe082; border-radius:10px; padding:20px 24px; text-align:center; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px #ffe08266'" onmouseout="this.style.boxShadow='none'">
+          <mat-icon style="font-size:36px; width:36px; height:36px; color:#f57f17;">account_balance_wallet</mat-icon>
+          <div style="font-weight:600; margin-top:8px;">{{ 'PROFILE.WALLET' | translate }}</div>
+          <div style="font-size:12px; color:#888; margin-top:4px;">Coming soon</div>
+        </div>
+      </div>
+    </div>
+
     <div *ngIf="selecteditem === 'trips'">
       <!-- MyTrips component fetches and displays bookings directly -->
       <app-my-trip></app-my-trip> 

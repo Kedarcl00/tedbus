@@ -39,7 +39,7 @@ import { CommunityService, Post } from '../../service/community.service';
 })
 export class ProfilePageComponent implements OnInit {
   // UI state
-  selecteditem: string = 'trips';
+  selecteditem: string = 'dashboard';
   
   // Profile state - Requirements: 2.3, 2.4
   isLoading: boolean = true;
