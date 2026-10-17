@@ -5,8 +5,10 @@
   <!-- Left: logo + nav links -->
   <div class="flex gap-2 md:gap-16 items-center w-full justify-between md:w-auto md:justify-start">
     <div class="grid place-content-center">
-      <img class="md:w-[4.5rem] md:h-auto w-12 h-10"
-        src="assets/red-bus-with-word-bus-it_600323-482.avif" alt="Tedbus Logo">
+      <a [routerLink]="['/']" title="Go to Home" style="cursor:pointer; display:block;">
+        <img class="md:w-[4.5rem] md:h-auto w-12 h-10"
+          src="assets/red-bus-with-word-bus-it_600323-482.avif" alt="Tedbus Logo">
+      </a>
     </div>
     <div class="h-6 w-[1px] bg-gray-200"></div>
     <div class="flex gap-3">
