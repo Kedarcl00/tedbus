@@ -1,104 +1,12 @@
+const mongoose      = require('mongoose');
 const Post          = require('../models/post');
 const Comment       = require('../models/comment');
 const ForumTopic    = require('../models/forumTopic');
 const ModerationLog = require('../models/moderationLog');
 const User          = require('../models/User');
 
-const mongoose      = require('mongoose');
-const Post          = require('../models/post');
-const Comment       = require('../models/comment');
-const ForumTopic    = require('../models/forumTopic');
-const ModerationLog = require('../models/moderationLog');
-
-// ── GET Single Post by ID ─────────────────────────────────────────────────────
-exports.getPostById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    const post = await Post.findById(id).lean();
-    if (!post || post.hidden) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    return res.status(200).json(post);
-  } catch (err) {
-    console.error('getPostById error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
-// ── DELETE Post (Author only) ──────────────────────────────────────────────────
-exports.deletePost = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.headers['x-user-id'];
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    if (post.authorId !== userId) {
-      return res.status(403).json({ success: false, message: 'Forbidden: You can only delete your own posts' });
-    }
-
-    post.hidden = true;
-    await post.save();
-    return res.status(200).json({ success: true, message: 'Post deleted' });
-  } catch (err) {
-    console.error('deletePost error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
-// ── UPDATE Post (Author only) ──────────────────────────────────────────────────
-exports.updatePost = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.headers['x-user-id'];
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    if (post.authorId !== userId) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-
-    const { title, body, tags, imageUrl } = req.body;
-    if (title !== undefined) post.title = title.trim();
-    if (body !== undefined) post.body = body.trim();
-    if (tags !== undefined) post.tags = tags;
-    if (imageUrl !== undefined) post.imageUrl = imageUrl;
-
-    await post.save();
-    return res.status(200).json(post);
-  } catch (err) {
-    console.error('updatePost error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
+// Helper to safely check MongoDB ObjectId
+const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 
 // ── Posts ─────────────────────────────────────────────────────────────────────
 
@@ -107,14 +15,15 @@ exports.getPosts = async (req, res) => {
   try {
     const { forumTopicId, authorId, sortBy, page = 1, limit = 20 } = req.query;
     const filter = { hidden: false };
-    if (forumTopicId) filter.forumTopicId = forumTopicId;
+    if (forumTopicId && isValidObjectId(forumTopicId)) {
+      filter.forumTopicId = forumTopicId;
+    }
 
     if (authorId) {
-      const isObjectId = typeof authorId === 'string' && /^[0-9a-fA-F]{24}$/.test(authorId);
       const user = await User.findOne({
         $or: [
           { googleId: authorId },
-          ...(isObjectId ? [{ _id: authorId }] : [])
+          ...(isValidObjectId(authorId) ? [{ _id: authorId }] : [])
         ]
       }).select('_id googleId').lean().exec();
 
@@ -144,131 +53,223 @@ exports.getPosts = async (req, res) => {
     }
 
     const total = await Post.countDocuments(filter);
-    res.json({ posts, total, page: Number(page) });
+    return res.status(200).json({ posts, total, page: Number(page) });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('getPosts error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
-// POST /api/v1/community/posts  (protected by verifiedGuard)
+// GET /api/v1/community/posts/:id
+exports.getPostById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id).lean();
+    if (!post || post.hidden) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    return res.status(200).json(post);
+  } catch (err) {
+    console.error('getPostById error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// POST /api/v1/community/posts (protected by verifiedGuard)
 exports.createPost = async (req, res) => {
   try {
     const { userId, authorName, title, body, tags, forumTopicId, imageUrl } = req.body;
-    if (!title?.trim() || !body?.trim()) return res.sendError('VALIDATION', 400);
+    if (!title?.trim() || !body?.trim()) {
+      return res.status(400).json({ success: false, message: 'Title and body are required' });
+    }
+
     const post = await Post.create({
-      authorId: userId, authorName, title, body,
-      tags: tags || [], forumTopicId: forumTopicId || null,
+      authorId: userId,
+      authorName: authorName || 'Anonymous',
+      title: title.trim(),
+      body: body.trim(),
+      tags: tags || [],
+      forumTopicId: (forumTopicId && isValidObjectId(forumTopicId)) ? forumTopicId : null,
       imageUrl: imageUrl || null,
     });
-    if (forumTopicId) {
+
+    if (forumTopicId && isValidObjectId(forumTopicId)) {
       await ForumTopic.findByIdAndUpdate(forumTopicId, { $inc: { postCount: 1 } });
     }
-    res.status(201).json(post);
+
+    return res.status(201).json(post);
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('createPost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// PUT /api/v1/community/posts/:id (author only, protected by verifiedGuard)
+exports.updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['x-user-id'] || req.body?.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post || post.hidden) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Check author match (support both Google ID and User _id)
+    const isOwner = post.authorId === userId || (req.verifiedUser && post.authorId === req.verifiedUser.googleId);
+    if (!isOwner) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only edit your own posts' });
+    }
+
+    const { title, body, tags, imageUrl } = req.body;
+    if (title !== undefined) post.title = title.trim();
+    if (body !== undefined) post.body = body.trim();
+    if (tags !== undefined) post.tags = tags;
+    if (imageUrl !== undefined) post.imageUrl = imageUrl;
+
+    await post.save();
+    return res.status(200).json(post);
+  } catch (err) {
+    console.error('updatePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// DELETE /api/v1/community/posts/:id (author only, soft delete)
+exports.deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['x-user-id'] || req.body?.userId || req.query?.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Check author match
+    const isOwner = post.authorId === userId;
+    if (!isOwner) {
+      // Check if user object ID or Google ID matches
+      const user = await User.findOne({
+        $or: [
+          { googleId: userId },
+          ...(isValidObjectId(userId) ? [{ _id: userId }] : [])
+        ]
+      }).select('_id googleId').lean().exec();
+
+      const matched = user && (post.authorId === user.googleId || post.authorId === user._id.toString());
+      if (!matched) {
+        return res.status(403).json({ success: false, message: 'Forbidden: You can only delete your own posts' });
+      }
+    }
+
+    post.hidden = true;
+    await post.save();
+    return res.status(200).json({ success: true, message: 'Post deleted' });
+  } catch (err) {
+    console.error('deletePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 // POST /api/v1/community/posts/:id/like
 exports.likePost = async (req, res) => {
   try {
+    const { id } = req.params;
     const { userId } = req.body;
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.sendError('NOT_FOUND', 404);
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
+
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post || post.hidden) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
     const idx = post.likes.indexOf(userId);
-    if (idx === -1) post.likes.push(userId);
-    else post.likes.splice(idx, 1);       // toggle unlike
+    if (idx === -1) {
+      post.likes.push(userId);
+    } else {
+      post.likes.splice(idx, 1); // toggle unlike
+    }
     await post.save();
-    res.json({ likes: post.likes.length });
+    return res.status(200).json({ likes: post.likes.length, isLiked: idx === -1 });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('likePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 // POST /api/v1/community/posts/:id/report
 exports.reportPost = async (req, res) => {
   try {
+    const { id } = req.params;
     const { userId } = req.body;
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.sendError('NOT_FOUND', 404);
-    if (!post.reportedBy.includes(userId)) {
-      post.reportedBy.push(userId);
-      await post.save();   // pre-save hook handles auto-hide at >= 5 reports
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
     }
-    res.json({ reports: post.reportedBy.length, hidden: post.hidden });
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    if (userId && !post.reportedBy.includes(userId)) {
+      post.reportedBy.push(userId);
+      await post.save(); // pre-save hook handles auto-hide at >= 5 reports
+    }
+
+    return res.status(200).json({ reports: post.reportedBy.length, hidden: post.hidden });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('reportPost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 // POST /api/v1/community/posts/:id/share
 exports.sharePost = async (req, res) => {
   try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
     const post = await Post.findByIdAndUpdate(
-      req.params.id, { $inc: { shareCount: 1 } }, { new: true }
+      id,
+      { $inc: { shareCount: 1 } },
+      { new: true }
     );
-    if (!post) return res.sendError('NOT_FOUND', 404);
-    res.json({ shareCount: post.shareCount });
-  } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
-  }
-};
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
 
-// PUT /api/v1/community/posts/:id  (author only, protected by verifiedGuard)
-exports.updatePost = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    if (!userId) return res.sendError('UNAUTHORIZED', 401);
-    
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.sendError('NOT_FOUND', 404);
-    
-    // Authorization: only the author can edit
-    if (post.authorId !== userId) return res.sendError('FORBIDDEN', 403);
-    
-    const { title, body, tags, imageUrl } = req.body;
-    if (title !== undefined) post.title = title.trim();
-    if (body !== undefined) post.body = body.trim();
-    if (tags !== undefined) post.tags = tags;
-    if (imageUrl !== undefined) post.imageUrl = imageUrl;
-    
-    // TODO: Future enhancement - restrict editing to 24 hours after creation
-    // const hoursSinceCreation = (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60);
-    // if (hoursSinceCreation > 24) return res.sendError('EDIT_WINDOW_EXPIRED', 403);
-    
-    await post.save();
-    res.json(post);
+    return res.status(200).json({ shareCount: post.shareCount });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
-  }
-};
-
-// DELETE /api/v1/community/posts/:id  (author only, soft delete)
-exports.deletePost = async (req, res) => {
-  try {
-    const userId = req.headers['x-user-id'];
-    if (!userId) return res.sendError('UNAUTHORIZED', 401);
-    
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.sendError('NOT_FOUND', 404);
-    
-    // Authorization: only the author can delete
-    if (post.authorId !== userId) return res.sendError('FORBIDDEN', 403);
-    
-    // Soft delete by setting hidden to true
-    post.hidden = true;
-    await post.save();
-    
-    res.json({ success: true, message: 'Post deleted' });
-  } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('sharePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -278,46 +279,67 @@ exports.deletePost = async (req, res) => {
 exports.getComments = async (req, res) => {
   try {
     const { postId } = req.query;
-    if (!postId) return res.sendError('VALIDATION', 400);
+    if (!postId || !isValidObjectId(postId)) {
+      return res.status(400).json({ success: false, message: 'Valid postId is required' });
+    }
+
     const comments = await Comment.find({ postId, hidden: false })
       .sort({ createdAt: 1 })
       .lean();
-    res.json(comments);
+    return res.status(200).json(comments);
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('getComments error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
-// POST /api/v1/community/comments  (protected by verifiedGuard)
+// POST /api/v1/community/comments (protected by verifiedGuard)
 exports.createComment = async (req, res) => {
   try {
     const { userId, authorName, postId, body } = req.body;
-    if (!body?.trim()) return res.sendError('VALIDATION', 400);
+    if (!body?.trim() || !postId) {
+      return res.status(400).json({ success: false, message: 'Body and postId are required' });
+    }
+
+    if (!isValidObjectId(postId)) {
+      return res.status(400).json({ success: false, message: 'Invalid postId' });
+    }
+
     const comment = await Comment.create({
-      postId, authorId: userId, authorName, body,
+      postId,
+      authorId: userId,
+      authorName: authorName || 'Anonymous',
+      body: body.trim(),
     });
-    res.status(201).json(comment);
+    return res.status(201).json(comment);
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('createComment error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
 // POST /api/v1/community/comments/:id/report
 exports.reportComment = async (req, res) => {
   try {
+    const { id } = req.params;
     const { userId } = req.body;
-    const comment = await Comment.findById(req.params.id);
-    if (!comment) return res.sendError('NOT_FOUND', 404);
-    if (!comment.reportedBy.includes(userId)) {
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+
+    const comment = await Comment.findById(id);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+
+    if (userId && !comment.reportedBy.includes(userId)) {
       comment.reportedBy.push(userId);
       await comment.save();
     }
-    res.json({ reports: comment.reportedBy.length, hidden: comment.hidden });
+    return res.status(200).json({ reports: comment.reportedBy.length, hidden: comment.hidden });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('reportComment error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -337,23 +359,30 @@ exports.getTopics = async (req, res) => {
       await ForumTopic.insertMany(defaultTopics);
       topics = await ForumTopic.find().sort({ pinned: -1, createdAt: -1 }).lean();
     }
-    res.json(topics);
+    return res.status(200).json(topics);
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('getTopics error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
-// POST /api/v1/community/topics  (protected by verifiedGuard)
+// POST /api/v1/community/topics (protected by verifiedGuard)
 exports.createTopic = async (req, res) => {
   try {
     const { userId, title, description } = req.body;
-    if (!title?.trim()) return res.sendError('VALIDATION', 400);
-    const topic = await ForumTopic.create({ title, description, createdBy: userId });
-    res.status(201).json(topic);
+    if (!title?.trim()) {
+      return res.status(400).json({ success: false, message: 'Topic title is required' });
+    }
+
+    const topic = await ForumTopic.create({
+      title: title.trim(),
+      description: (description || '').trim(),
+      createdBy: userId,
+    });
+    return res.status(201).json(topic);
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('createTopic error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -364,15 +393,26 @@ exports.moderate = async (req, res) => {
   try {
     const { moderatorId, targetType, targetId, action, reason } = req.body;
     if (!moderatorId || !targetType || !targetId || !action) {
-      return res.sendError('VALIDATION', 400);
+      return res.status(400).json({ success: false, message: 'Missing moderation parameters' });
     }
+
+    if (!isValidObjectId(targetId)) {
+      return res.status(400).json({ success: false, message: 'Invalid targetId' });
+    }
+
     const Model = targetType === 'post' ? Post : Comment;
     const hidden = action === 'hide' || action === 'delete';
     await Model.findByIdAndUpdate(targetId, { hidden });
-    await ModerationLog.create({ moderatorId, targetType, targetId, action, reason: reason || '' });
-    res.json({ success: true });
+    await ModerationLog.create({
+      moderatorId,
+      targetType,
+      targetId,
+      action,
+      reason: reason || '',
+    });
+    return res.status(200).json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.sendError('SERVER_ERROR', 500);
+    console.error('moderate error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

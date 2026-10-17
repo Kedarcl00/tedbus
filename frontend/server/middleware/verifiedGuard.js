@@ -10,7 +10,12 @@ const User = require('../models/User');
 
 module.exports = async function verifiedGuard(req, res, next) {
   const userId = req.body?.userId || req.query?.userId || req.headers['x-user-id'];
-  if (!userId) return res.sendError('UNAUTHORIZED', 401);
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Authentication required', statusCode: 401 }
+    });
+  }
 
   try {
     // Resolve user by Google ID or ObjectId
@@ -54,6 +59,9 @@ module.exports = async function verifiedGuard(req, res, next) {
     next();
   } catch (err) {
     console.error('VerifiedGuard error:', err.message);
-    res.sendError('SERVER_ERROR', 500);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error', statusCode: 500 }
+    });
   }
 };

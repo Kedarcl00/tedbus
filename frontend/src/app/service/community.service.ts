@@ -34,6 +34,10 @@ export class CommunityService {
     return this.http.get<any>(`${BASE}/posts`, { params });
   }
 
+  getPostById(postId: string): Observable<Post> {
+    return this.http.get<Post>(`${BASE}/posts/${postId}`);
+  }
+
   getUserPosts(authorId: string, page = 1): Observable<{ posts: Post[]; total: number }> {
     return this.getPosts(undefined, page, authorId);
   }
