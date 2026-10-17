@@ -1,8 +1,7 @@
 /**
  * BusService - Bus inventory and seat availability management service
  * Manages bus catalog, seat availability calculation, and seat reservation/release operations
- * Prevents double-booking through atomic reservation operations
- * Validates Requirement 1.3 (Service-Oriented Architecture) and 6.2 (User-Specific Booking Retrieval)
+ * Prevents double-booking through atomic reservation operations * Service-Oriented Architecture and user-specific booking management
  */
 
 const BusRepository = require('../repositories/bus.repository');
@@ -30,8 +29,7 @@ class BusService {
 
   /**
    * Search buses by route and date with availability calculation
-   * Returns available buses matching the search filters with seat count information
-   * Implements Requirement 1.3: service layer returns result or throws error
+   * Returns available buses matching the search filters with seat count information * Service layer returns result or throws structured error
    *
    * @async
    * @param {Object} filters - Search filter criteria
@@ -291,8 +289,7 @@ class BusService {
   /**
    * Reserve seats for a booking (atomic operation to prevent double-booking)
    * Validates seat availability, prevents concurrent modifications, and returns reservation token
-   * Throws InsufficientSeatsError if seats are already booked
-   * Implements Requirement 1.3: atomic operations prevent race conditions
+   * Throws InsufficientSeatsError if seats are already booked * Atomic operations prevent race conditions
    *
    * @async
    * @param {string} busId - MongoDB bus ID
@@ -419,8 +416,7 @@ class BusService {
   /**
    * Release reserved seats on cancellation
    * Frees up the seats so they can be booked by other customers
-   * Called during booking cancellation to restore seat availability
-   * Implements Requirement 1.3: service method returns result or throws error
+   * Called during booking cancellation to restore seat availability * Service method returns result or throws structured error
    *
    * @async
    * @param {string} busId - MongoDB bus ID

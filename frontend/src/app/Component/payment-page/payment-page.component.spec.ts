@@ -81,7 +81,7 @@ describe('PaymentPageComponent', () => {
   });
 
   describe('Payment Method Selection', () => {
-    it('should initialize with "online" as default payment method (Requirement 5.1)', () => {
+    it('should initialize with "online" as default payment method ', () => {
       expect(component.selectedPaymentMethod).toBe('online');
     });
 
@@ -116,7 +116,7 @@ describe('PaymentPageComponent', () => {
       expect(cashSection).toBeFalsy();
     });
 
-    it('should show cash on trip section when selectedPaymentMethod is "cash_on_trip" (Requirement 5.2)', () => {
+    it('should show cash on trip section when selectedPaymentMethod is "cash_on_trip" ', () => {
       fixture.detectChanges();
       component.selectedPaymentMethod = 'cash_on_trip';
       fixture.detectChanges();
@@ -166,7 +166,7 @@ describe('PaymentPageComponent', () => {
     });
   });
 
-  describe('Booking Creation with PaymentMethod (Requirement 5.3)', () => {
+  describe('Booking Creation with PaymentMethod ', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
@@ -201,7 +201,7 @@ describe('PaymentPageComponent', () => {
       }, 100);
     });
 
-    it('should call BookingService.createBooking() with correct payload when cash on trip (Requirement 5.3)', (done) => {
+    it('should call BookingService.createBooking() with correct payload when cash on trip ', (done) => {
       component.selectedPaymentMethod = 'cash_on_trip';
       mockBookingService.createBooking.and.returnValue(of({
         id: 'BOOKING001',
@@ -278,7 +278,7 @@ describe('PaymentPageComponent', () => {
   });
 
   describe('Successful Booking', () => {
-    it('should show receipt modal on successful booking (Requirement 5.3)', (done) => {
+    it('should show receipt modal on successful booking ', (done) => {
       component.selectedPaymentMethod = 'cash_on_trip';
       const mockResponse = {
         id: 'BOOKING001',
@@ -345,7 +345,7 @@ describe('PaymentPageComponent', () => {
   });
 
   describe('Error Handling', () => {
-    it('should display error message on booking failure (Requirement 5.3)', (done) => {
+    it('should display error message on booking failure ', (done) => {
       const mockError = { message: 'Booking failed due to server error' };
       mockBookingService.createBooking.and.returnValue(throwError(() => mockError));
       spyOn(window, 'alert');
@@ -424,7 +424,7 @@ describe('PaymentPageComponent', () => {
     });
   });
 
-  describe('Cash on Trip Display (Requirement 5.2)', () => {
+  describe('Cash on Trip Display ', () => {
     it('should display cash on trip message with correct fare amount', () => {
       fixture.detectChanges();
       component.passfare = 1500;

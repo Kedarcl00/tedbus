@@ -77,7 +77,7 @@ const bookingSchema = new Schema(
     arrivalTime: {
       type: String,
     },
-    // New fields for journey details (Phase 2)
+    // Journey details
     departureLocation: {
       name: String,
       city: String,

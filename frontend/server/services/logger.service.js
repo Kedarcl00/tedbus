@@ -3,9 +3,9 @@
  * 
  * Provides structured logging with context tracking for debugging and monitoring.
  * Supports development and production environments with different verbosity levels.
- * 
- * Requirements Met:
- * - 7.1: Logging service with context and environment-specific output
+ *
+ * Features:
+ * - Structured logging service with context and environment-specific output
  */
 
 class LoggerService {

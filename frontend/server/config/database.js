@@ -3,9 +3,9 @@
  * 
  * Manages MongoDB connection setup, model exports, schema validation,
  * and error handling for the TedBus application.
- * 
- * Requirements Met:
- * - 8.1: Database connection and MongoDB integration
+ *
+ * Features:
+ * - Database connection and MongoDB integration
  * - Mongoose models loading and registration
  * - Connection pooling and retry logic
  * - Index creation and validation

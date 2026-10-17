@@ -56,7 +56,7 @@ body {
     font-size: 14px;
   }
 
-  /* Cash on Trip Section Styling (Requirement 5.2) */
+  /* Cash on Trip Section Styling */
   .cash-on-trip-section {
     background-color: var(--color-surface-alt);
     border-radius: 2px;

@@ -41,7 +41,7 @@ export class ProfilePageComponent implements OnInit {
   // UI state
   selecteditem: string = 'dashboard';
   
-  // Profile state - Requirements: 2.3, 2.4
+  // Profile state
   isLoading: boolean = true;
   profileError: string | null = null;
   userProfile: UserProfile | null = null;
@@ -95,7 +95,6 @@ export class ProfilePageComponent implements OnInit {
    * 2. Load user profile from API (GET /api/users/profile)
    * 3. Load user's bookings from API (legacy BusService.getbusmongo)
    *
-   * Requirements: 2.3, 2.4
    */
   ngOnInit(): void {
     // Defensive check: ensure user is authenticated
@@ -111,7 +110,7 @@ export class ProfilePageComponent implements OnInit {
     this.currentname = user.name ?? '';
     this.currentemail = user.email ?? '';
 
-    // Fetch user profile from API - Requirements: 2.3
+    // Fetch user profile from API
     // The API enforces user isolation server-side (via X-User-Id header from interceptor)
     // User can only access their own profile (403 Forbidden if trying to access another)
     this.fetchUserProfile();
@@ -126,7 +125,6 @@ export class ProfilePageComponent implements OnInit {
    * - Returns 403 Forbidden if user tries to access another profile
    * - Returns 404 Not Found if profile doesn't exist
    *
-   * Requirements: 2.3, 2.4
    */
   private fetchUserProfile(): void {
     this.isLoading = true;

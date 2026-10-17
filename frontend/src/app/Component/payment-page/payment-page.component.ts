@@ -44,7 +44,7 @@ export class PaymentPageComponent implements OnInit {
   receiptHTML: string = '';
   receiptData: any = null;
   
-  // Payment method selector properties (Requirement 5.1)
+  // Payment method selector properties
   selectedPaymentMethod: 'online' | 'cash_on_trip' = 'online';
   isSubmitting: boolean = false;
   errorMessage: string = '';

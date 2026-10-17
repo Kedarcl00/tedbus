@@ -12,7 +12,6 @@ import { AuthService } from '../service/auth.service';
  * Validates that the HTTP interceptor correctly injects Google ID in request headers
  * for authenticated requests and handles unauthenticated requests gracefully.
  *
- * Requirements being tested: 2.1, 4.2, 4.4
  *
  * Note: These tests verify the core logic that the authInterceptor implements:
  * 1. Get Google ID from AuthService when user is authenticated
@@ -49,7 +48,7 @@ describe('authInterceptor', () => {
 
   describe('AuthService header injection support', () => {
     it('should retrieve Google ID from AuthService when user is logged in', () => {
-      // Requirement 4.2, 4.4: Google ID from session for header injection
+      // Google ID from session for header injection
       const testUser = {
         id: '123',
         googleId: 'google_123',
@@ -112,7 +111,7 @@ describe('authInterceptor', () => {
 
   describe('HTTP interceptor integration - GET requests', () => {
     it('should include X-User-Id header in GET request when authenticated', () => {
-      // Requirement 4.4: Google ID header injection in requests
+      // Google ID header injection in requests
       const testUser = {
         id: '123',
         googleId: 'google_123',
@@ -130,7 +129,7 @@ describe('authInterceptor', () => {
     });
 
     it('should NOT include X-User-Id header in GET request when not authenticated', () => {
-      // Requirement 4.4: No injection for unauthenticated requests
+      // No injection for unauthenticated requests
       httpClient.get('/api/buses').subscribe();
 
       const req = httpTestingController.expectOne('/api/buses');
@@ -412,9 +411,9 @@ describe('authInterceptor', () => {
     });
   });
 
-  describe('Requirements compliance validation', () => {
-    it('satisfies Requirement 2.1 - authenticated user ID from request context', () => {
-      // Requirement 2.1: User isolation - authenticated user ID from request context
+  describe('Auth header compliance validation', () => {
+    it('validates authenticated user ID from request context', () => {
+      // User isolation - authenticated user ID from request context
       const testUser = {
         id: 'user_123',
         googleId: 'google_id_123',
@@ -433,8 +432,8 @@ describe('authInterceptor', () => {
       req.flush([]);
     });
 
-    it('satisfies Requirement 4.2 - Google ID validation from session', () => {
-      // Requirement 4.2: Authentication middleware - Google user ID validation from session
+    it('validates Google ID validation from session', () => {
+      // Authentication middleware - Google user ID validation from session
       const testUser = {
         id: 'user_456',
         googleId: 'google_id_456',
@@ -454,8 +453,8 @@ describe('authInterceptor', () => {
       req.flush({});
     });
 
-    it('satisfies Requirement 4.4 - Google ID header injection in requests', () => {
-      // Requirement 4.4: User isolation - Google ID header injection in requests
+    it('validates Google ID header injection in requests', () => {
+      // User isolation - Google ID header injection in requests
       const testUser = {
         id: 'user_789',
         googleId: 'google_id_789',

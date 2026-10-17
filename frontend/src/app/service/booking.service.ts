@@ -8,7 +8,6 @@ import { url } from '../config';
 /**
  * Search filters for bus search
  * Used in searchBuses() to query available buses with specific criteria
- * Requirements: 5.1, 6.1
  */
 export interface SearchFilters {
   source: string; // Departure city/location
@@ -20,7 +19,6 @@ export interface SearchFilters {
 /**
  * Bus object returned from search
  * Contains all information needed for display and booking
- * Requirements: 5.1, 6.1
  */
 export interface Bus {
   busId: string;
@@ -60,7 +58,6 @@ export interface Passenger {
 /**
  * DTO for creating a new booking
  * Sent to backend as POST /bookings request body
- * Requirements: 5.1, 5.2, 5.3
  */
 export interface CreateBookingDTO {
   busId: string;
@@ -79,7 +76,6 @@ export interface CreateBookingDTO {
 /**
  * Response from booking creation
  * Returned by backend after POST /bookings
- * Requirements: 5.3
  */
 export interface BookingResponse {
   // MongoDB returns _id; 'id' may be present as an alias in some responses
@@ -123,8 +119,7 @@ export interface CancellationResult {
 }
 
 /**
- * Standard error response from backend
- * All errors follow this format per Requirement 3.1
+ * Standard error response from backend * Standard error response format
  */
 export interface ApiErrorResponse {
   success: false;
@@ -153,7 +148,6 @@ export interface ApiErrorResponse {
  * - Comprehensive error handling with meaningful error messages
  * - Typed Observables for all API calls
  *
- * Requirements: 5.1, 5.2, 5.3, 6.1
  */
 @Injectable({
   providedIn: 'root'
@@ -178,7 +172,6 @@ export class BookingService {
    * Example:
    * searchBuses({source: 'NYC', destination: 'Boston', date: '2024-06-15', passengers: 2})
    *
-   * Requirements: 5.1, 6.1
    */
   searchBuses(filters: SearchFilters): Observable<Bus[]> {
     let params = new HttpParams()
@@ -228,7 +221,6 @@ export class BookingService {
    *   ...
    * })
    *
-   * Requirements: 5.1, 5.2, 5.3
    */
   createBooking(bookingData: CreateBookingDTO): Observable<BookingResponse> {
     return this.http.post<BookingResponse>(this.bookingUrl, bookingData)
@@ -251,7 +243,6 @@ export class BookingService {
    *
    * @returns Observable<BookingResponse[]> - Array of user's bookings
    *
-   * Requirements: 6.1
    */
   getMyBookings(): Observable<BookingResponse[]> {
     return this.http.get<BookingResponse[]>(this.myBookingsUrl)
@@ -276,7 +267,6 @@ export class BookingService {
    * - 403 Forbidden: User is not the booking owner
    * - 404 Not Found: Booking doesn't exist
    *
-   * Requirements: 6.1
    */
   getBookingDetails(bookingId: string): Observable<BookingResponse> {
     const url = `${this.bookingUrl}/${bookingId}`;
@@ -305,7 +295,6 @@ export class BookingService {
    * - 404 Not Found: Booking doesn't exist
    * - 400 Bad Request: Booking cannot be cancelled (already completed, etc.)
    *
-   * Requirements: 6.1
    */
   cancelBooking(bookingId: string): Observable<CancellationResult> {
     const url = `${this.bookingUrl}/${bookingId}`;
@@ -325,8 +314,7 @@ export class BookingService {
    * - 403 Forbidden: User doesn't have permission
    * - 404 Not Found: Resource not found
    * - 500 Internal Server Error: Generic error message (never expose server details)
-   *
-   * Per Requirement 3.1, backend returns: {success: false, error: {code, message, statusCode, details}}
+   * * Standard backend response format: {success: false, error: {code, message, statusCode, details}}
    *
    * @private
    * @param error - HttpErrorResponse from HTTP call

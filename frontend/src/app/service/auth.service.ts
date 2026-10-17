@@ -67,7 +67,6 @@ export class AuthService {
    * Called after successful authentication with backend via POST /auth/login
    *
    * @param user - User object received from backend containing {id, googleId, name, email, picture}
-   * Requirements: 2.1, 4.2, 4.4
    */
   login(user: AuthenticatedUser): void {
     if (!user || !user.id || !user.googleId) {
@@ -94,7 +93,6 @@ export class AuthService {
    * Logout method - clears all authentication data from sessionStorage
    * Called when user clicks logout or session expires
    *
-   * Requirements: 2.1, 4.2
    */
   logout(): void {
     // Clear user data
@@ -118,7 +116,6 @@ export class AuthService {
    * Called from app initialization (AppComponent.ngOnInit)
    * 
    * @returns Observable<boolean> - true if session restored, false otherwise
-   * Requirements: 1.2 - Session restoration
    */
   restoreSession(): Observable<boolean> {
     const user = this.loadUser();
@@ -137,7 +134,6 @@ export class AuthService {
    * Returns user object stored in sessionStorage or null if not authenticated
    *
    * @returns User object {id, googleId, name, email, picture} or null
-   * Requirements: 2.1, 4.4
    */
   getCurrentUser(): AuthenticatedUser | null {
     return this.currentUserSubject.value;
@@ -148,7 +144,6 @@ export class AuthService {
    * Synchronous method to check authentication status
    *
    * @returns true if user is authenticated, false otherwise
-   * Requirements: 2.1, 4.2
    */
   isAuthenticated(): boolean {
     return this.isLoggedIn;
@@ -160,7 +155,6 @@ export class AuthService {
    * Backend validation middleware uses this for user identification
    *
    * @returns Google ID string for header injection, or null if not authenticated
-   * Requirements: 4.2, 4.4
    */
   getGoogleIdForHeaderInjection(): string | null {
     const stored = sessionStorage.getItem(GOOGLE_ID_KEY);

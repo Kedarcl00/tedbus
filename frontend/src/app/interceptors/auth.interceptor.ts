@@ -19,7 +19,6 @@ import { AuthService } from '../service/auth.service';
  * and enforces user isolation on protected endpoints.
  *
  * Pattern: Uses Angular 17+ functional interceptor pattern (not class-based)
- * Requirements: 2.1, 4.2, 4.4
  *
  * Behavior:
  * 1. For each outgoing request, check if user is authenticated

@@ -377,8 +377,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe('Edge cases and requirements validation', () => {
-    it('should satisfy Requirement 2.1 - authenticated user ID from request context', () => {
+  describe('Edge cases and header validation', () => {
+    it('should authenticate authenticated user ID from request context', () => {
       const testUser = {
         id: 'user_context_id',
         googleId: 'google_id',
@@ -390,7 +390,7 @@ describe('AuthService', () => {
       expect(service.getCurrentUser()?.id).toBe('user_context_id');
     });
 
-    it('should satisfy Requirement 4.2 - Google user ID validation from session', () => {
+    it('should validate Google ID Google user ID validation from session', () => {
       const testUser = {
         id: '123',
         googleId: 'validated_google_id',
@@ -404,7 +404,7 @@ describe('AuthService', () => {
       expect(storedGoogleId).toBe('validated_google_id');
     });
 
-    it('should satisfy Requirement 4.4 - Google ID header injection in requests', () => {
+    it('should inject Google ID header Google ID header injection in requests', () => {
       const testUser = {
         id: '123',
         googleId: 'header_google_id',

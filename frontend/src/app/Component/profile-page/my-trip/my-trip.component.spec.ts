@@ -22,7 +22,6 @@ import { BookingService, BookingResponse } from '../../../service/booking.servic
  * 9. Booking status display
  * 10. Refund amount display after cancellation
  *
- * Requirements: 5.1, 6.1
  */
 describe('MyTripComponent', () => {
   let component: MyTripComponent;

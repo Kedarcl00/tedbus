@@ -25,7 +25,6 @@ import { Booking } from '../../model/booking.model';
  * - Bookings loading from legacy API
  * - Navigation to home if user not authenticated
  *
- * Requirements: 2.3, 2.4 (user profile isolation)
  */
 describe('ProfilePageComponent', () => {
   let component: ProfilePageComponent;
@@ -181,7 +180,6 @@ describe('ProfilePageComponent', () => {
   /**
    * Test: 403 Forbidden error handling (user isolation violation)
    * Verifies specific error message for access denied scenario
-   * Requirements: 2.3, 2.4
    */
   it('should handle 403 Forbidden error (access denied) for user isolation', (done) => {
     const forbiddenError = {

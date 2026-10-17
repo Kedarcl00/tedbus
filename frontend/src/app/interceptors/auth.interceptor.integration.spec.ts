@@ -13,7 +13,6 @@ import { AuthService } from '../service/auth.service';
  * 3. Unauthenticated requests don't include the header
  * 4. The interceptor integrates properly with AuthService
  *
- * Requirements: 2.1, 4.2, 4.4
  */
 describe('authInterceptor - Integration with Angular HTTP Stack', () => {
   let httpClient: HttpClient;
@@ -97,8 +96,8 @@ describe('authInterceptor - Integration with Angular HTTP Stack', () => {
       authService.login(testUser);
     });
 
-    it('Requirement 2.1 - X-User-Id header provides user isolation context', () => {
-      // Requirement 2.1: User isolation - authenticated user ID from request context
+    it('User isolation - X-User-Id header provides user isolation context', () => {
+      // User isolation - authenticated user ID from request context
       // The backend will use X-User-Id to filter bookings by the authenticated user
 
       httpClient.get('/api/bookings/my').subscribe();
@@ -110,8 +109,8 @@ describe('authInterceptor - Integration with Angular HTTP Stack', () => {
       req.flush({ bookings: [] });
     });
 
-    it('Requirement 4.2 - X-User-Id validates Google ID from session', () => {
-      // Requirement 4.2: Backend validates Google ID matches session
+    it('Session validation - X-User-Id validates Google ID from session', () => {
+      // Backend validates Google ID matches session
 
       httpClient.get('/api/users/profile').subscribe();
 
@@ -122,8 +121,8 @@ describe('authInterceptor - Integration with Angular HTTP Stack', () => {
       req.flush({ profile: { name: 'User' } });
     });
 
-    it('Requirement 4.4 - X-User-Id header injected in all requests', () => {
-      // Requirement 4.4: Google ID header injection in requests
+    it('Header injection - X-User-Id header injected in all requests', () => {
+      // Google ID header injection in requests
 
       // GET request
       httpClient.get('/api/bookings').subscribe();

@@ -1,7 +1,7 @@
 /**
  * Validation Utilities for TedBus Service-Oriented Architecture
  * Provides input validation functions for common data types with structured error details
- * Requirements: 3.2 - Validation errors include field-specific details
+ * Ensures validation errors include field-specific details
  */
 
 const { ValidationError } = require('./custom-errors');

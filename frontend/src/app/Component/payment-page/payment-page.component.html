@@ -1,7 +1,7 @@
 <div class="payment__fullContainer">
     <!-- left Container -->
     <div class="payment__fullContainer_leftContainer">
-        <!-- Payment Method Selector (Requirement 5.1) -->
+        <!-- Payment Method Selector -->
         <div class="payment-method-selector">
             <h3 class="payment-method-title">{{ 'PAYMENT.SELECT_METHOD' | translate }}</h3>
             <div class="payment-methods">
@@ -33,7 +33,7 @@
             {{ errorMessage }}
         </div>
 
-        <!-- Online Payment Section (Requirement 5.2 - hidden when Cash on Trip selected) -->
+        <!-- Online Payment Section (hidden when Cash on Trip selected) -->
         <div *ngIf="selectedPaymentMethod === 'online'" class="online-payment-section">
             <input class="payment__fullContainer_rightContainer_inputOfferCOde" placeholder="ENTER OFFER CODE" />
             <div class="payment__fullContainer_rightContainer_infobar">
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <!-- Cash on Trip Section (Requirement 5.2 - hidden when Online selected) -->
+        <!-- Cash on Trip Section (hidden when Online selected) -->
         <div *ngIf="selectedPaymentMethod === 'cash_on_trip'" class="cash-on-trip-section">
             <div class="cash-on-trip-header">
                 <h3>{{ 'PAYMENT.CASH_SELECTED' | translate }}</h3>

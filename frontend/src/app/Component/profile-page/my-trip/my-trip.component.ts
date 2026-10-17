@@ -131,7 +131,6 @@ export class MyTripComponent implements OnInit {
    * - Returns only bookings created by authenticated user
    * - Ordered by departure date descending (upcoming trips first)
    *
-   * Requirements: 6.1
    */
   private loadBookings(): void {
     this.isLoading = true;
@@ -173,8 +172,7 @@ export class MyTripComponent implements OnInit {
    * near midnight. For production, consider server-side classification or UTC timestamps.
    * 
    * @param bookings - All bookings to classify
-   * 
-   * Requirements: 3.1 - Separate current/upcoming from completed bookings
+   *
    */
   private classifyBookings(bookings: BookingResponse[]): void {
     // Get today's date at midnight in local timezone
@@ -253,7 +251,6 @@ export class MyTripComponent implements OnInit {
    * @param method - Payment method from booking (cash_on_trip or online)
    * @returns Formatted label for display
    *
-   * Requirement: 5.1 - Display "Cash on Trip" option and its display in booking
    */
   getPaymentMethodLabel(method: string): string {
     if (method === 'cash_on_trip') {
@@ -285,7 +282,6 @@ export class MyTripComponent implements OnInit {
    *
    * @param booking - Booking to cancel
    *
-   * Requirement: 6.1 - Cancel booking button with confirmation dialog
    */
   onCancelBooking(booking: BookingResponse): void {
     // Show browser confirmation dialog with refund information

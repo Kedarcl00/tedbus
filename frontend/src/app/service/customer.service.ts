@@ -8,7 +8,6 @@ import { url } from '../config';
 /**
  * User profile interface with complete user information
  * Returned from GET /api/users/profile
- * Requirements: 2.3, 2.4
  */
 export interface UserProfile extends Customer {
   id: string;
@@ -23,7 +22,6 @@ export interface UserProfile extends Customer {
 /**
  * User preferences interface
  * Optional profile extension
- * Requirements: 2.3
  */
 export interface UserPreferences {
   theme?: string;
@@ -35,7 +33,6 @@ export interface UserPreferences {
 /**
  * DTO for updating user profile
  * Sent to backend as PUT /api/users/profile request body
- * Requirements: 2.4
  */
 export interface UpdateProfileDTO {
   name?: string;
@@ -47,8 +44,7 @@ export interface UpdateProfileDTO {
 }
 
 /**
- * Standard error response from backend
- * All errors follow this format per Requirement 3.1
+ * Standard error response from backend * Standard error response format
  */
 export interface ApiErrorResponse {
   success: false;
@@ -75,7 +71,6 @@ export interface ApiErrorResponse {
  * - Typed Observables for all API calls
  * - Support for both legacy and new API endpoints
  *
- * Requirements: 2.3, 2.4
  */
 @Injectable({
   providedIn: 'root'
@@ -114,7 +109,6 @@ export class CustomerService {
    *   error: (error) => console.error('Failed to load profile:', error.message)
    * })
    *
-   * Requirements: 2.3
    */
   getProfile(): Observable<UserProfile> {
     return this.http.get<UserProfile>(this.userProfileUrl)
@@ -162,7 +156,6 @@ export class CustomerService {
    *   error: (error) => console.error('Update failed:', error.message)
    * })
    *
-   * Requirements: 2.4
    */
   updateProfile(updateData: UpdateProfileDTO): Observable<UserProfile> {
     return this.http.put<UserProfile>(this.userProfileUrl, updateData)
@@ -181,7 +174,6 @@ export class CustomerService {
    *
    * @returns Observable<UserPreferences> - User's preference settings
    *
-   * Requirements: 2.3 (optional)
    */
   getPreferences(): Observable<UserPreferences> {
     return this.http.get<UserPreferences>(this.userPreferencesUrl)
@@ -199,7 +191,6 @@ export class CustomerService {
    * @returns Observable<Customer> - Created customer
    * @deprecated Use backend registration endpoint instead
    *
-   * Requirements: 2.2 (legacy support)
    */
   addcustomermongo(user: any): Observable<Customer> {
     const customer: Customer = {
@@ -224,15 +215,13 @@ export class CustomerService {
    * - 403 Forbidden: User doesn't have permission (accessing another profile)
    * - 404 Not Found: Resource not found
    * - 500 Internal Server Error: Generic error message (never expose server details)
-   *
-   * Per Requirement 3.1, backend returns: {success: false, error: {code, message, statusCode, details}}
+   * * Standard backend response format: {success: false, error: {code, message, statusCode, details}}
    *
    * @private
    * @param error - HttpErrorResponse from HTTP call
    * @param defaultMessage - Fallback message if backend error is unavailable
    * @returns Observable<never> - Throws error with transformed message
    *
-   * Requirements: 3.1
    */
   private handleError(error: any, defaultMessage: string): Observable<never> {
     let errorMessage = defaultMessage;

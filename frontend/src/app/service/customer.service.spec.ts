@@ -16,7 +16,6 @@ import { url } from '../config';
  * - Error messages are extracted from backend responses
  * - User isolation (no explicit user parameters, enforced server-side)
  *
- * Requirements: 2.3, 2.4, 3.1
  */
 describe('CustomerService', () => {
   let service: CustomerService;
@@ -69,7 +68,6 @@ describe('CustomerService', () => {
   /**
    * Test: getProfile() calls correct endpoint
    * Verifies GET /api/users/profile is called
-   * Requirements: 2.3
    */
   it('should call GET /api/users/profile for getProfile()', (done) => {
     service.getProfile().subscribe((profile) => {
@@ -110,7 +108,6 @@ describe('CustomerService', () => {
   /**
    * Test: updateProfile() calls correct endpoint
    * Verifies PUT /api/users/profile is called with update data
-   * Requirements: 2.4
    */
   it('should call PUT /api/users/profile for updateProfile()', (done) => {
     const updateData: UpdateProfileDTO = {
@@ -208,7 +205,6 @@ describe('CustomerService', () => {
   /**
    * Test: Error handling for 403 Forbidden
    * Verifies user isolation violation is properly handled
-   * Requirements: 2.3, 2.4
    */
   it('should handle 403 Forbidden error', (done) => {
     service.getProfile().subscribe(
@@ -303,7 +299,7 @@ describe('CustomerService', () => {
   /**
    * Test: Backend error response format handling
    * Verifies error message extraction from standard API error format
-   * Per Requirement 3.1
+   * Standard error format
    */
   it('should extract error message from backend error response', (done) => {
     const backendError = {
@@ -332,7 +328,6 @@ describe('CustomerService', () => {
    * Test: User isolation enforcement (no explicit user ID parameter)
    * Verifies the service doesn't pass user ID as query parameter
    * User isolation is enforced server-side via X-User-Id header (from interceptor)
-   * Requirements: 2.3, 2.4
    */
   it('should not include user ID as query parameter (user isolation enforced server-side)', (done) => {
     service.getProfile().subscribe(() => {
