@@ -5,6 +5,7 @@ const verifiedGuard = require('../middleware/verifiedGuard');
 
 // Posts
 router.get('/api/v1/community/posts',              ctrl.getPosts);
+router.get('/api/v1/community/posts/:id',          ctrl.getPostById);  
 router.post('/api/v1/community/posts',             verifiedGuard, ctrl.createPost);
 router.put('/api/v1/community/posts/:id',          verifiedGuard, ctrl.updatePost);
 router.delete('/api/v1/community/posts/:id',       ctrl.deletePost);

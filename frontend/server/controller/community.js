@@ -4,6 +4,102 @@ const ForumTopic    = require('../models/forumTopic');
 const ModerationLog = require('../models/moderationLog');
 const User          = require('../models/User');
 
+const mongoose      = require('mongoose');
+const Post          = require('../models/post');
+const Comment       = require('../models/comment');
+const ForumTopic    = require('../models/forumTopic');
+const ModerationLog = require('../models/moderationLog');
+
+// ── GET Single Post by ID ─────────────────────────────────────────────────────
+exports.getPostById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id).lean();
+    if (!post || post.hidden) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    return res.status(200).json(post);
+  } catch (err) {
+    console.error('getPostById error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// ── DELETE Post (Author only) ──────────────────────────────────────────────────
+exports.deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['x-user-id'];
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    if (post.authorId !== userId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only delete your own posts' });
+    }
+
+    post.hidden = true;
+    await post.save();
+    return res.status(200).json({ success: true, message: 'Post deleted' });
+  } catch (err) {
+    console.error('deletePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// ── UPDATE Post (Author only) ──────────────────────────────────────────────────
+exports.updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['x-user-id'];
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    if (post.authorId !== userId) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    const { title, body, tags, imageUrl } = req.body;
+    if (title !== undefined) post.title = title.trim();
+    if (body !== undefined) post.body = body.trim();
+    if (tags !== undefined) post.tags = tags;
+    if (imageUrl !== undefined) post.imageUrl = imageUrl;
+
+    await post.save();
+    return res.status(200).json(post);
+  } catch (err) {
+    console.error('updatePost error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+
 // ── Posts ─────────────────────────────────────────────────────────────────────
 
 // GET /api/v1/community/posts?forumTopicId=&authorId=&sortBy=&page=1&limit=20
